@@ -10,24 +10,39 @@ void nombre(){
 //Decide quien inicia
 void jugador(){
 	int opciones = 0;
-	printf("\n Quien iniciara el juego?--> 1 = Usted || 0 = La computadora: ");
+	//Consulta si desea elegir o no
+	printf("\nDesea elegir quien comienza? --> 1 = SI || 0 = NO: ");
 	scanf("%d", &opciones);
-	while (opciones !=1 && opciones != 0){		//Pide el valor hasta que ingrese el correcto
-		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = Usted || 0 = La computadora): ");
+	while ( opciones !=1 && opciones!= 0 ){  			//Pide el valor hasta que ingrese el correcto
+		printf("\nError, el valor ingresado no corresponde. Vuelva a ingresar por favor (1 = SI || 0 = NO): ");
 		scanf("%d", &opciones);
 	}
+
+	if(opciones == 1){
+		printf("\nQuien iniciara el juego?--> 1 = Usted || 0 = La computadora : ");
+		scanf("%d", &opciones);
+		while (opciones !=1 && opciones != 0){		//Pide el valor hasta que ingrese el correcto
+			printf("\nError, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = Usted || 0 = La computadora): ");
+			scanf("%d", &opciones);
+		}
+	}else{
+		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
+		srand(time(NULL));
+		opciones=rand() % 2;
+	}
+
 	//return opciones; IMPRESION DE PRUEBA
 	if (opciones == 0){
-		printf("\nComienza la computadora.\n");
+		printf("\n Comienza la computadora.\n");
 	}else{
-		printf("\nComienza la usted.\n");
+		printf("\n Comienza la usted.\n");
 	}
 }
 
 //Decide el color que empieza
 void color(){
 	int c = 0;
-	printf("\n Inician los Verdes o Rojas?--> 1 = VERDE || 0 = ROJO: ");
+	printf("\nInician los Verdes o Rojas?--> 1 = VERDE || 0 = ROJO: ");
 	scanf("%d", &c);
 	while (c !=1 && c != 0){		//Pide el valor hasta que ingrese el correcto
 		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = VERDE || 0 = ROJO): ");
@@ -57,7 +72,6 @@ int dim_matriz(){
 		scanf("%d", &dim);
 	}else{
 		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
-		srand(time(NULL));
 		dim=rand() % 15;
 		while (dim <= 1){
 			dim=rand() % 15;
