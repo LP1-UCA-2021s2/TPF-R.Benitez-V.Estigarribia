@@ -78,27 +78,3 @@ int dim_matriz(){
 	}
 	return dim;
 }
-
-
-
-
- //Imprime lindo la matriz
-/* void imprimir_matriz(int dim, char (*matriz)[dim][dim]){
-    printf("\n");
- 	int i, j;
- 	//Imprime los numeros de arriba
- 	printf("    ");
- 	for(i=0; i < dim; i++){
- 		printf(" %d |", i+1);
- 	}
- 	printf("\n------------------------------------\n");
-
- 	//Imprime los numeros del costado
- 	for(i=0; i < dim; i++){
- 		printf(" %d |", i+1);
- 		for (j=0; j < dim; j++){
- 			printf(" %s |", matriz[i][j] );
- 		}
- 	printf("\n------------------------------------\n");
- 	}
- }*/
