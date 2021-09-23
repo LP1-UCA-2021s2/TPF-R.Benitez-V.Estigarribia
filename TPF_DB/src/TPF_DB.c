@@ -20,7 +20,7 @@ int puntos[]= {0,0};
 
 struct caja {
     //estos atributos almacenan info de 1 bit (0 o 1)
-    unsigned int abierta:1;  //indica si la caja tiene todas sus paredes
+    unsigned int abierta;  //indica si la caja tiene todas sus paredes
     unsigned int ARRIBA :1;
     unsigned int ABAJO  :1;
     unsigned int IZQ    :1;
@@ -78,33 +78,68 @@ int CajasAbiertas(struct caja cajas[][N]){
 }
 
 //Agrega pared
-void AgregarPared(struct caja tablero[][N], int x, int y, int p){
+int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	switch(p){
 		case 0:
 			tablero[x][y].ARRIBA=TRUE;
 			//Se agrega la pared a la cajas adyacente de la caja actual
-			if(x-1>=0){		tablero[x-1][y].ABAJO=TRUE; }
+			if(x-1>=0){
+				tablero[x-1][y].ABAJO=TRUE;
+				if(tablero[x-1][y].abierta == 3){
+					tablero[x-1][y].abierta=FALSE;
+					return 1;
+				}
+			}
 			break;
 		case 1:
 			tablero[x][y].ABAJO=TRUE;
 
-			if(x+1<N){ 		tablero[x+1][y].ARRIBA=TRUE; }
+			if(x+1<N){
+				tablero[x+1][y].ARRIBA=TRUE;
+				if(tablero[x+1][y].abierta == 3){
+					tablero[x+1][y].abierta=FALSE;
+					return 1;
+				}
+			}
 			break;
 		case 2:
 			tablero[x][y].DER=TRUE;
 
-			if(y+1<N){		tablero[x][y+1].IZQ=TRUE;}
+			if(y+1<N){
+				tablero[x][y+1].IZQ=TRUE;
+				if(tablero[x][y+1].abierta == 3){
+					tablero[x][y+1].abierta=FALSE;
+					return 1;
+				}
+			}
 			break;
 		case 3:
 			tablero[x][y].IZQ=TRUE;
 
-			if(y-1>=0){		tablero[x][y-1].DER=TRUE;}
+			if(y-1>=0){
+				tablero[x][y-1].DER=TRUE;
+				if(tablero[x][y-1].abierta == 3){
+					tablero[x][y-1].abierta=FALSE;
+					return 1;
+				}
+			}
 			break;
 	}
 	//Controla si la jugada realizada cerro una caja
-	if (tablero[x][y].ARRIBA && tablero[x][y].ABAJO && tablero[x][y].DER && tablero[x][y].IZQ){
+
+	int cont = 0;
+	if (tablero[x][y].ARRIBA){	cont += 1;}
+	if (tablero[x][y].ABAJO) {	cont += 1;}
+	if (tablero[x][y].DER)   {	cont += 1;}
+	if (tablero[x][y].IZQ)   {	cont += 1;}
+	tablero[x][y].abierta = cont;
+
+	if (cont == 4){
 		tablero[x][y].abierta = FALSE;
 	}
+
+	return 0;
+
 }
 
 //Controla que las paredes no esten cerradas
@@ -166,10 +201,10 @@ void mov_usuario(struct caja tablero[][N]){
 			printf("\nError. La pared ya esta cerrada. Vuelva a elegir: ");
 			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
 		}
-
-	AgregarPared(tablero, f, c, p);
+	int cerro;
+	cerro = AgregarPared(tablero, f, c, p);
 	//Si la caja se cerro, suma los puntos
-	if (!tablero[f][c].abierta){
+	if (!tablero[f][c].abierta||cerro){
 		puntos[1] += 10;
 		printf("\n	Se te han sumado 10 puntos. Tienes %d puntos.", puntos[1]);
 	}
@@ -195,9 +230,10 @@ void mov_pc(struct caja tablero[][N]){
 	}
 	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
 
-	AgregarPared(tablero, fi, co, pa);
+	int cerro;
+	cerro = AgregarPared(tablero, fi, co, pa);
 	//Si la caja se cerro, suma los puntos
-	if (!tablero[fi][co].abierta){
+	if (!tablero[fi][co].abierta||cerro){
 		puntos[0] += 10;
 		printf("\n	Se le han sumado 10 puntos a la computadora. Tiene %d puntos.", puntos[0]);
 	}
@@ -206,8 +242,7 @@ void mov_pc(struct caja tablero[][N]){
 
 int main(int argc, char *argv[]){  //FALTA EL LOOP INICIAL PARA PODER TERMINAR EL JUEGO
 	//nombre();
-	//int turno = jugador();
-	int turno = 1;
+	int turno = jugador();
 	//color();
 	N =dim_matriz()-1;
 	struct caja tablero[N][N];
@@ -220,7 +255,7 @@ int main(int argc, char *argv[]){  //FALTA EL LOOP INICIAL PARA PODER TERMINAR E
 		}else if (turno ==0){
 			mov_pc(tablero);
 		}
-		//turno = !turno;
+		turno = !turno;
 		if (turno == 0){
 			printf("\n\n 		Juega la computadora\n");
 		}else{
