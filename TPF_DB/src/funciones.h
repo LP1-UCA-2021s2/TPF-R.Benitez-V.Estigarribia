@@ -1,4 +1,3 @@
-
 //Pide el nombre del usuario
 void nombre(){
 	char nombre[20];
@@ -30,6 +29,11 @@ int jugador(){
 		srand(time(NULL));
 		opciones=rand() % 2;
 	}
+	if (opciones == 1){
+		printf("  Comienza usted\n");
+	}else{
+		printf("  Comienza la computadora\n");
+	}
 
 	return opciones;
 }
@@ -42,6 +46,11 @@ int color(){
 	while (c !=1 && c != 0){		//Pide el valor hasta que ingrese el correcto
 		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = VERDE || 0 = ROJO): ");
 		scanf("%d", &c);
+	}
+	if (c == 1){
+			printf("  Comienzan los Verdes\n");
+		}else{
+			printf("  Comienza las Rojas\n");
 	}
 	return c;
 }
@@ -69,6 +78,8 @@ int dim_matriz(){
 	}
 	return dim;
 }
+
+
 
 
  //Imprime lindo la matriz
