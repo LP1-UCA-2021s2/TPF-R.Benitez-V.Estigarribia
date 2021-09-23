@@ -12,12 +12,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-int N=0;
 #include "funciones.h"
-
-
-
+int N=0;
 enum boolean {FALSE=0, TRUE=1};
+
+int puntos[]= {0,0};
 
 struct caja {
     //estos atributos almacenan info de 1 bit (0 o 1)
@@ -28,19 +27,27 @@ struct caja {
     unsigned int DER    :1;
 };
 
-int puntos[]= {0,0};
+
 
 //Imprime la caja
-void PrintBox(struct caja caja[][N]){
-	puts("\n--------------------------------------");
-	printf("soy una caja\n");
-	for(int i=0; i<N; i++){
-			for(int j=0; j<N; j++){
-				printf("\narr[%d][%d]\n", i, j);
-				printf("ARRIBA:%d, ABAJO:%d, DER:%d, IZQ:%d, abierta:%d\n",caja[i][j].ARRIBA, caja[i][j].ABAJO,caja[i][j].DER,caja[i][j].IZQ, caja[i][j].abierta);
-			}
-	}
-    puts("\n--------------------------------------");
+void PrintBox(struct caja cajas[][N]){
+	printf("\n");
+    for(int i=0; i < N; i++){
+        printf("+");
+        for(int j=0; j < N; j++){  //ARRIBA
+            printf("%s+",cajas[i][j].ARRIBA?"----":"    ");
+        }
+        puts(" ");
+        for(int j=0; j < N; j++){  //IZQ
+            printf("%s    ", cajas[i][j].IZQ?"|":" ");
+        }
+        printf("%s", cajas[i][N-1].DER?"|":" "); //DER ultima columna
+        puts(" ");
+    }
+    printf("+");
+    for(int j=0; j < N; j++){  //ABAJO ultima fila
+        printf("%s+",cajas[N-1][j].ABAJO?"----":"    ");
+    }
 }
 
 
@@ -72,31 +79,32 @@ int CajasAbiertas(struct caja cajas[][N]){
 
 //Agrega pared
 void AgregarPared(struct caja tablero[][N], int x, int y, int p){
-	//si en la direccion de p hay una caja, a esa caja se le agrega una pared en la dir opuesta
 	switch(p){
 		case 0:
 			tablero[x][y].ARRIBA=TRUE;
-			if(x-1>=0)
-				tablero[x-1][y].ABAJO=TRUE;
+			//Se agrega la pared a la cajas adyacente de la caja actual
+			if(x-1>=0){		tablero[x-1][y].ABAJO=TRUE; }
 			break;
 		case 1:
 			tablero[x][y].ABAJO=TRUE;
-			if(x+1<N)
-				tablero[x+1][y].ARRIBA=TRUE;
+
+			if(x+1<N){ 		tablero[x+1][y].ARRIBA=TRUE; }
 			break;
 		case 2:
 			tablero[x][y].DER=TRUE;
-			if(y+1<N)
-				tablero[x][y+1].IZQ=TRUE;
+
+			if(y+1<N){		tablero[x][y+1].IZQ=TRUE;}
 			break;
 		case 3:
 			tablero[x][y].IZQ=TRUE;
-			if(y-1>=0)
-				tablero[x+1][y].DER=TRUE;
+
+			if(y-1>=0){		tablero[x][y-1].DER=TRUE;}
 			break;
 	}
-	puts("\n\t\tpared agregada\n");
-
+	//Controla si la jugada realizada cerro una caja
+	if (tablero[x][y].ARRIBA && tablero[x][y].ABAJO && tablero[x][y].DER && tablero[x][y].IZQ){
+		tablero[x][y].abierta = FALSE;
+	}
 }
 
 //Controla que las paredes no esten cerradas
@@ -127,7 +135,7 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 }
 
 //Juega el humano
-void IniciarPartida(struct caja tablero[][N]){
+void mov_usuario(struct caja tablero[][N]){
 	//inicializar las paredes
     int f = 0;
     int c = 0;
@@ -136,6 +144,7 @@ void IniciarPartida(struct caja tablero[][N]){
     //Controla que aun hayan cajas abiertas
 	printf("\nIngrese las coordenadas de la caja [fila, columna]: ");
 	scanf("%d, %d", &f, &c);
+
 	while( f >= N || c >= N){			//Pide el valor hasta que sea el correcto
 		printf("\nError. Coordenadas fuera de rango. Vuelva a ingresar: ");
 		scanf("%d, %d", &f, &c);
@@ -155,10 +164,15 @@ void IniciarPartida(struct caja tablero[][N]){
 		}
 		while(pared_check(tablero, f, c, p)==0){		//La pared seleccionada esta cerrada
 			printf("\nError. La pared ya esta cerrada. Vuelva a elegir: ");
-			goto bueno;
+			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
 		}
 
 	AgregarPared(tablero, f, c, p);
+	//Si la caja se cerro, suma los puntos
+	if (!tablero[f][c].abierta){
+		puntos[1] += 10;
+		printf("\n	Se te han sumado 10 puntos. Tienes %d puntos.", puntos[1]);
+	}
 
 }
 
@@ -166,19 +180,13 @@ void IniciarPartida(struct caja tablero[][N]){
 //Movimiento de la pc de manera random
 void mov_pc(struct caja tablero[][N]){
 	srand(time(NULL));
-						//TIENE PROBLEMAS, ENTRA EN EL LOOP INFINITO DE Pared_check
-						//NO PRINTEA LA LINEA 172
-
-
-	//Controla 	que aun halla cajas abiertas
-
 	int fi= rand()% N;
 	int co = rand()% N;
 	while(!tablero[fi][co].abierta){		//Elige hasta encontrar una caja abierta
 		fi= rand()% N;
 		co = rand()% N;
 	}
-	printf("		EMTRA %d, %d", fi, co);
+	printf("\nCoordenadas de la caja: %d, %d", fi, co);
 
 	//Paredes
 	int pa = rand()% 4;
@@ -187,31 +195,44 @@ void mov_pc(struct caja tablero[][N]){
 	}
 	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
 
-
 	AgregarPared(tablero, fi, co, pa);
+	//Si la caja se cerro, suma los puntos
+	if (!tablero[fi][co].abierta){
+		puntos[0] += 10;
+		printf("\n	Se le han sumado 10 puntos a la computadora. Tiene %d puntos.", puntos[0]);
+	}
+
 }
 
 int main(int argc, char *argv[]){  //FALTA EL LOOP INICIAL PARA PODER TERMINAR EL JUEGO
 	//nombre();
 	//int turno = jugador();
-	int turno=0;
+	int turno = 1;
 	//color();
-	//N =dim_matriz()-1;
-	N=3;
+	N =dim_matriz()-1;
 	struct caja tablero[N][N];
 	InitBoxes(tablero);
-	PrintBox(tablero);
 	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
 	while (CajasAbiertas(tablero) != 0){
 		PrintBox(tablero);
 		if (turno == 1){ 	//Juega humano
-			IniciarPartida(tablero);
+			mov_usuario(tablero);
 		}else if (turno ==0){
 			mov_pc(tablero);
 		}
-		puntos[turno] +=10; 	//Contador de puntos del jugador
-		turno = !turno;
-		printf ("\nTURNOOO : %d", turno);
+		//turno = !turno;
+		if (turno == 0){
+			printf("\n\n 		Juega la computadora\n");
+		}else{
+			printf("\n\n 		Juega usted\n");
+		}
+	}
+	PrintBox(tablero);
+	printf("\n\n 		TERMINO EL JUEGO");
+	if (puntos[0]> puntos[1]){
+		printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
+	}else{
+		printf("\nHa ganadooo :)");
 	}
 
 	return 0;
