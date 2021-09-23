@@ -8,7 +8,7 @@ void nombre(){
 }
 
 //Decide quien inicia
-void jugador(){
+int jugador(){
 	int opciones = 0;
 	//Consulta si desea elegir o no
 	printf("\nDesea elegir quien comienza? --> 1 = SI || 0 = NO: ");
@@ -31,29 +31,19 @@ void jugador(){
 		opciones=rand() % 2;
 	}
 
-	//return opciones; IMPRESION DE PRUEBA
-	if (opciones == 0){
-		printf("\n Comienza la computadora.\n");
-	}else{
-		printf("\n Comienza la usted.\n");
-	}
+	return opciones;
 }
 
 //Decide el color que empieza
-void color(){
+int color(){
 	int c = 0;
-	printf("\nInician los Verdes o Rojas?--> 1 = VERDE || 0 = ROJO: ");
+	printf("\nInician los Verdes o Rojos?--> 1 = VERDE || 0 = ROJO: ");
 	scanf("%d", &c);
 	while (c !=1 && c != 0){		//Pide el valor hasta que ingrese el correcto
 		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = VERDE || 0 = ROJO): ");
 		scanf("%d", &c);
 	}
-	//return c; IMPRESION DE PRUEBA
-	if (c == 0){
-		printf("\n Comienzan los rojos.\n");
-	}else{
-		printf("\n Comienzan los verdes.\n");
-	}
+	return c;
 }
 
 //Define el tamaño de la matriz
@@ -80,24 +70,6 @@ int dim_matriz(){
 	return dim;
 }
 
-
- char crear_matriz(int dim){
-	int i,j=0;
-	char matriz[dim][dim];
-	//primero se cera la matriz
-	for (i=0; i<dim; i++){
-		for (j=0; j<dim ; j++){
-			matriz[i][j]=0;
-		}
-	}
-
-	for (i=0; i<dim; i++){
-		for (j=0; j<dim ; j++){
-			matriz[i][j]= '*';
-		}
-	}
-	return matriz[dim][dim];
- }
 
  //Imprime lindo la matriz
 /* void imprimir_matriz(int dim, char (*matriz)[dim][dim]){

@@ -49,6 +49,7 @@ void print_box(struct caja caja){
 
 //const int N=2;  //dim matriz de cajas
 int main(int argc, char *argv[]){
+
     printf("Hello World\n");
     struct caja cajas[N][N];
     cajas[0][0].DER = TRUE;
@@ -56,3 +57,5 @@ int main(int argc, char *argv[]){
 
 	return 0;
 }
+
+
