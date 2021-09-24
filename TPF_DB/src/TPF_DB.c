@@ -137,7 +137,6 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 			break;
 	}
 	//Controla si la jugada realizada cerro una caja
-
 	if (tablero[x][y].ARRIBA && tablero[x][y].ABAJO && tablero[x][y].DER && tablero[x][y].IZQ){
 		tablero[x][y].abierta = FALSE;
 		return 1;
@@ -181,7 +180,7 @@ int mov_usuario(struct caja tablero[][N]){
     int c = 0;
     int p = 0;
 
-    //Controla que aun hayan cajas abiertas
+    	//Controla que aun hayan cajas abiertas
 	printf("\nIngrese las coordenadas de la caja [fila, columna]: ");
 	scanf("%d, %d", &f, &c);
 
@@ -249,10 +248,10 @@ int mov_pc(struct caja tablero[][N]){
 
 }
 
-int main(int argc, char *argv[]){  //FALTA EL LOOP INICIAL PARA PODER TERMINAR EL JUEGO
-	//nombre();
+int main(int argc, char *argv[]){
+	nombre();
 	int turno = jugador();
-	//color();
+	color();
 	N = dim_matriz()-1;
 	puntos[0] = 0;
 	puntos[1] = 0;
