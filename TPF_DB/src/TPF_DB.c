@@ -77,8 +77,9 @@ int CajasAbiertas(struct caja cajas[][N]){
 	return 0;
 }
 
-//Agrega pared
+//Agrega pared y retorna la cantidad de cajas cerradas en el proceso
 int AgregarPared(struct caja tablero[][N], int x, int y, int p){
+	int cajasCerradas = 0;
 	switch(p){
 		case 0:
 			tablero[x][y].ARRIBA=TRUE;
@@ -86,11 +87,7 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 			if(x-1>=0)
 			{
 				if(tablero[x-1][y].ABAJO==FALSE){  //condicion de ruptura (funcion recursiva)
-					AgregarPared(tablero, x-1, y, 1);
-				}
-
-				if(!tablero[x-1][y].abierta){
-					return 1;
+					cajasCerradas = AgregarPared(tablero, x-1, y, 1);
 				}
 			}
 			break;
@@ -100,11 +97,7 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 			if(x+1<N)
 			{
 				if(tablero[x+1][y].ARRIBA==FALSE){  //condicion de ruptura (funcion recursiva)
-					AgregarPared(tablero, x+1, y, 0);
-				}
-
-				if(!tablero[x+1][y].abierta){
-					return 1;
+					cajasCerradas = AgregarPared(tablero, x+1, y, 0);
 				}
 			}
 			break;
@@ -114,10 +107,7 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 			if(y+1<N)
 			{
 				if(tablero[x][y+1].IZQ==FALSE){  //condicion de ruptura (funcion recursiva)
-					AgregarPared(tablero, x, y+1, 3);
-				}
-				if(!tablero[x][y+1].abierta){
-					return 1;
+					cajasCerradas = AgregarPared(tablero, x, y+1, 3);
 				}
 			}
 			break;
@@ -127,22 +117,18 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 			if(y-1>=0)
 			{
 				if(tablero[x][y-1].DER==FALSE){  //condicion de ruptura (funcion recursiva)
-					AgregarPared(tablero, x, y-1, 2);
-				}
-
-				if(!tablero[x][y-1].abierta){
-					return 1;
+					cajasCerradas = AgregarPared(tablero, x, y-1, 2);
 				}
 			}
 			break;
 	}
-	//Controla si la jugada realizada cerro una caja
+	//Controla si la jugada realizada cerro la caja actual
 	if (tablero[x][y].ARRIBA && tablero[x][y].ABAJO && tablero[x][y].DER && tablero[x][y].IZQ){
 		tablero[x][y].abierta = FALSE;
-		return 1;
+		cajasCerradas += 1;
 	}
 
-	return 0;
+	return cajasCerradas;
 
 }
 
@@ -173,7 +159,7 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 	return 1;
 }
 
-//Juega el humano
+//Juega el humano, retorna 1 si cerro alguna caja
 int mov_usuario(struct caja tablero[][N]){
 	//inicializar las paredes
     int f = 0;
@@ -205,12 +191,13 @@ int mov_usuario(struct caja tablero[][N]){
 			printf("\nError. La pared ya esta cerrada. Vuelva a elegir: ");
 			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
 		}
-	int cerro;
-	cerro = AgregarPared(tablero, f, c, p);
+	int cajasCerradas;
+	cajasCerradas = AgregarPared(tablero, f, c, p);
 	//Si la caja se cerro, suma los puntos
-	if (cerro){
-		puntos[1] += 10;
-		printf("\n	Se te han sumado 10 puntos. Tienes %d puntos.", puntos[1]);
+	if (cajasCerradas){
+		puntos[1] += 10 * cajasCerradas;
+		printf("\nHas cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
+		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[1]);
 		return 1;
 	}
 	return 0;
@@ -218,7 +205,7 @@ int mov_usuario(struct caja tablero[][N]){
 }
 
 
-//Movimiento de la pc de manera random
+//Movimiento de la pc de manera random, retorna 1 si cerro alguna caja
 int mov_pc(struct caja tablero[][N]){
 	srand(time(NULL));
 	int fi= rand()% N;
@@ -236,12 +223,13 @@ int mov_pc(struct caja tablero[][N]){
 	}
 	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
 
-	int cerro;
-	cerro = AgregarPared(tablero, fi, co, pa);
+	int cajasCerradas;
+	cajasCerradas = AgregarPared(tablero, fi, co, pa);
 	//Si la caja se cerro, suma los puntos
-	if (cerro){
-		puntos[0] += 10;
-		printf("\n	Se le han sumado 10 puntos a la computadora. Tiene %d puntos.", puntos[0]);
+	if (cajasCerradas){
+		puntos[0] += 10 * cajasCerradas;
+		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
+		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
 		return 1;
 	}
 	return 0;
