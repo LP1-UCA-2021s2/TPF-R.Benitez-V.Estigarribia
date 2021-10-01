@@ -16,7 +16,7 @@
 int N=0;
 enum boolean {FALSE=0, TRUE=1};
 
-int puntos[2];
+int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
 struct caja {
     //estos atributos almacenan info de 1 bit (0 o 1)
@@ -29,7 +29,7 @@ struct caja {
 
 
 
-//Imprime la caja
+//Imprime el tablero en el terminal
 void PrintBox(struct caja cajas[][N]){
 	printf("\n");
     for(int i=0; i < N; i++){
@@ -65,58 +65,52 @@ void InitBoxes(struct caja cajas[][N]){
 	}
 }
 
-//Controla si las cajas aun tienen paredes abiertas
-int CajasAbiertas(struct caja cajas[][N]){
-	for(int i=0; i < N; i++){
-		for(int j=0; j < N; j++){
-			if(cajas[i][j].abierta){
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
 
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso
 int AgregarPared(struct caja tablero[][N], int x, int y, int p){
+	//Se agrega una pared p a la caja en tablero[x][y]
 	int cajasCerradas = 0;
 	switch(p){
+		//Agrega arriba
 		case 0:
 			tablero[x][y].ARRIBA=TRUE;
 			//Se agrega la pared a la cajas adyacente de la caja actual
 			if(x-1>=0)
 			{
-				if(tablero[x-1][y].ABAJO==FALSE){  //condicion de ruptura (funcion recursiva)
+				if(tablero[x-1][y].ABAJO==FALSE){  //condicion de ruptura (de la funcion recursiva)
 					cajasCerradas = AgregarPared(tablero, x-1, y, 1);
 				}
 			}
 			break;
+		//Agrega abajo
 		case 1:
 			tablero[x][y].ABAJO=TRUE;
 
 			if(x+1<N)
 			{
-				if(tablero[x+1][y].ARRIBA==FALSE){  //condicion de ruptura (funcion recursiva)
+				if(tablero[x+1][y].ARRIBA==FALSE){
 					cajasCerradas = AgregarPared(tablero, x+1, y, 0);
 				}
 			}
 			break;
+		//Agrega a la derecha
 		case 2:
 			tablero[x][y].DER=TRUE;
 
 			if(y+1<N)
 			{
-				if(tablero[x][y+1].IZQ==FALSE){  //condicion de ruptura (funcion recursiva)
+				if(tablero[x][y+1].IZQ==FALSE){
 					cajasCerradas = AgregarPared(tablero, x, y+1, 3);
 				}
 			}
 			break;
+		//Agrega a la izquierda
 		case 3:
 			tablero[x][y].IZQ=TRUE;
 
 			if(y-1>=0)
 			{
-				if(tablero[x][y-1].DER==FALSE){  //condicion de ruptura (funcion recursiva)
+				if(tablero[x][y-1].DER==FALSE){
 					cajasCerradas = AgregarPared(tablero, x, y-1, 2);
 				}
 			}
@@ -129,8 +123,8 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	}
 
 	return cajasCerradas;
-
 }
+
 
 //Controla que las paredes no esten cerradas
 int pared_check(struct caja tablero[][N], int x, int y, int p){
@@ -159,27 +153,29 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 	return 1;
 }
 
-//Juega el humano, retorna 1 si cerro alguna caja
-int mov_usuario(struct caja tablero[][N]){
-	//inicializar las paredes
-    int f = 0;
-    int c = 0;
-    int p = 0;
 
-    	//Controla que aun hayan cajas abiertas
+//Juega el humano, retorna la cantidad de cajas cerradas en un movimiento
+int mov_usuario(struct caja tablero[][N]){
+	//Datos a ingresar
+    int f = 0;  //fila
+    int c = 0;  //columna
+    int p = 0;  //pared
+
 	printf("\nIngrese las coordenadas de la caja [fila, columna]: ");
 	scanf("%d, %d", &f, &c);
 
-	while( f >= N || c >= N){			//Pide el valor hasta que sea el correcto
+	//Comprobacion fila y columna dentro del rango de la matriz NO COMPRUEBA PARA (f,c)<0
+	while( f >= N || c >= N){
 		printf("\nError. Coordenadas fuera de rango. Vuelva a ingresar: ");
 		scanf("%d, %d", &f, &c);
 	}
-	while(!tablero[f][c].abierta){		//La caja que eligio esta cerrada
+	//Si la caja que eligio esta cerrada vuelve a pedir NO COMPRUEBA QUE ESTEN DENTRO DE RANGO
+	while(!tablero[f][c].abierta){
 		printf("\nLa caja seleccionada esta cerrada. Vuelva a elegir: ");
 		scanf("%d, %d", &f, &c);
 	}
 
-	//Paredes
+	//Pedir pared a cerrar
 	printf("\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: ");
 	bueno:
 		scanf("%d", &p);
@@ -191,23 +187,27 @@ int mov_usuario(struct caja tablero[][N]){
 			printf("\nError. La pared ya esta cerrada. Vuelva a elegir: ");
 			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
 		}
+
+	//Se hace el movimiento
 	int cajasCerradas;
 	cajasCerradas = AgregarPared(tablero, f, c, p);
-	//Si la caja se cerro, suma los puntos
+
+	//suma los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
 		puntos[1] += 10 * cajasCerradas;
 		printf("\nHas cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[1]);
-		return 1;
+		return cajasCerradas;
 	}
-	return 0;
+	return cajasCerradas;
 
 }
 
 
-//Movimiento de la pc de manera random, retorna 1 si cerro alguna caja
+//Movimiento de la pc de manera random, retorna la cantidad de cajas cerradas en un movimiento
 int mov_pc(struct caja tablero[][N]){
 	srand(time(NULL));
+	//Seleccion de coordenadas de caja
 	int fi= rand()% N;
 	int co = rand()% N;
 	while(!tablero[fi][co].abierta){		//Elige hasta encontrar una caja abierta
@@ -216,57 +216,70 @@ int mov_pc(struct caja tablero[][N]){
 	}
 	printf("\nCoordenadas de la caja: %d, %d", fi, co);
 
-	//Paredes
+	//Elige pared a cerrar
 	int pa = rand()% 4;
 	while(pared_check(tablero, fi, co, pa)==0){		//Elige hasta encontrar una pared abierta
 		pa = rand()% 4;
 	}
 	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
 
+	//Se hace el movimiento
 	int cajasCerradas;
 	cajasCerradas = AgregarPared(tablero, fi, co, pa);
-	//Si la caja se cerro, suma los puntos
+
+	//se suman los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
 		puntos[0] += 10 * cajasCerradas;
 		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
-		return 1;
+		return cajasCerradas;
 	}
-	return 0;
-
+	return cajasCerradas;
 }
 
+
+
 int main(int argc, char *argv[]){
-	nombre();
-	int turno = jugador();
-	color();
-	N = dim_matriz()-1;
+	nombre();  //verificar
+	int turno = jugador();  //verificar
+	color();  //hay que modificar
+	N = dim_matriz()-1;  //modificar dim_matriz HACE MAL LAS COMPROBACIONES
+
+	//Inicializa puntajes
 	puntos[0] = 0;
 	puntos[1] = 0;
 
+	//Creacion de tablero
 	struct caja tablero[N][N];
 	InitBoxes(tablero);
 	PrintBox(tablero);
 	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
-	int repite=0;
-	while (CajasAbiertas(tablero)){
-		if (turno == 0){
-			printf("\n\n 		Juega la computadora\n");
-		}else{
-			printf("\n\n 		Juega usted\n");
-		}
+
+	//Ejecucion del juego
+	int repite;  //indica si se repite el turno o no
+	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
+	while (cajasAbiertas){
+
 		if (turno == 1){ 	//Juega humano
+			printf("\n\n 		Juega usted\n");
 			repite = mov_usuario(tablero);
-		}else if (turno == 0){
+
+		}else if (turno == 0){  //Juega PC
+			printf("\n\n 		Juega la computadora\n");
 			repite = mov_pc(tablero);
 		}
+
 		PrintBox(tablero);
 		printf("\n--------------  PC: %d  | Tu: %d  ------------------\n", puntos[0], puntos[1]);
 
-		if(!repite){
+		if(!repite){	//si la cant de cajas cerradas es cero, cambia el turno
 			turno = !turno;
 		}
+
+		cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
 	}
+
+	//Mensajes fin de juego
 	printf("\n\n 		TERMINO EL JUEGO");
 	if (puntos[0] > puntos[1]){
 		printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
