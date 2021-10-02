@@ -13,23 +13,37 @@
 #include <string.h>
 #include <time.h>
 #include "funciones.h"
-int N=0;
-enum boolean {FALSE=0, TRUE=1};
+
+int N = 0;  //Dimension de la matriz de cajas (no del tablero)
+
+enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas para operar con las cajas
 
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
+
 struct caja {
-	/*Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
+	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
 	 * 		- 0 : esta 'abierta'
 	 * 		- 1 : esta 'cerrada'
 	 * 		- 2 : esta abierta pero la caja contigua tiene pCerradas=2
 	 * 		- 3 : esta cerrada y la caja contigua tiene pCerradas=2
 	 *
 	 *
-	 *El peso de una caja indica cuantas cajas alrededor suyo tienen pCerradas=2
+	 * El peso de una caja indica cuantas cajas alrededor suyo tienen pCerradas=2
 	 * 		- Cada caja ady que cumpla esa condicion le agrega un peso=2
+	 * 		- La pared pegada a dicha caja tambien adquiere PESO
 	 * 		- Por tanto  0 <= peso <= 8
+	 *
+	 *
+	 * Como saber si una caja esta 'abierta' o 'cerrada' independientemente de su peso?
+	 * 		Con este sistema, la forma de hacer esta comprobacion es
+	 *		usando el operador % (modulo) con el valor PESO
+	 *		- PARED%PESO dara 1 si PARED esta cerrada
+	 *		- PARED%PESO dara 0 si PARED esta abierta
+	 *
 	 */
+
+	//Declaracion de atributos de caja
 	unsigned int peso;
     unsigned int pCerradas;  //indica la cantidad de paredes cerradas
     unsigned int ARRIBA :2;
@@ -65,13 +79,36 @@ void PrintBox(struct caja cajas[][N]){
 
 //Inicializa y cera las paredes
 void InitBoxes(struct caja cajas[][N]){
+	/*Todas las cajas inician con todas las paredes y pCerradas en cero
+	 * PERO el peso no es el mismo para todas, las paredes que esten
+	 * en el 'borde' del tablero ya le agregan peso a la caja
+	 *
+	 * Por tanto las cajas ubicadas en las esquinas tienen peso inicial 4
+	 * y las que estan en el borde tienen peso inicial 2
+	 */
 	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++){
-			cajas[i][j].abierta = TRUE;
-			cajas[i][j].ARRIBA  = FALSE;
-			cajas[i][j].ABAJO   = FALSE;
-			cajas[i][j].DER     = FALSE;
-			cajas[i][j].IZQ     = FALSE;
+			cajas[i][j].peso = 0;
+			cajas[i][j].pCerradas = 0;
+			cajas[i][j].ARRIBA  = ABIERTA;
+			cajas[i][j].ABAJO   = ABIERTA;
+			cajas[i][j].DER     = ABIERTA;
+			cajas[i][j].IZQ     = ABIERTA;
+
+			//Peso de cajas en el borde
+			if(i==0){
+				cajas[i][j].peso += PESO;
+				cajas[i][j].ARRIBA += PESO;
+			}if(j==0){
+				cajas[i][j].peso += PESO;
+				cajas[i][j].IZQ += PESO;
+			}if(i==N-1){
+				cajas[i][j].peso += PESO;
+				cajas[i][j].ABAJO += PESO;
+			}if(j==N-1){
+				cajas[i][j].peso += PESO;
+				cajas[i][j].DER += PESO;
+			}
 		}
 	}
 }
