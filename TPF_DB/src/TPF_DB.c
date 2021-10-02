@@ -60,18 +60,18 @@ void PrintBox(struct caja cajas[][N]){
     for(int i=0; i < N; i++){
         printf("+");
         for(int j=0; j < N; j++){  //ARRIBA
-            printf("%s+",cajas[i][j].ARRIBA?"----":"    ");
+            printf("%s+",cajas[i][j].ARRIBA%2?"----":"    ");
         }
         puts(" ");
         for(int j=0; j < N; j++){  //IZQ
-            printf("%s    ", cajas[i][j].IZQ?"|":" ");
+            printf("%s    ", cajas[i][j].IZQ%2?"|":" ");
         }
-        printf("%s", cajas[i][N-1].DER?"|":" "); //DER ultima columna
+        printf("%s", cajas[i][N-1].DER%2?"|":" "); //DER ultima columna
         puts(" ");
     }
     printf("+");
     for(int j=0; j < N; j++){  //ABAJO ultima fila
-        printf("%s+",cajas[N-1][j].ABAJO?"----":"    ");
+        printf("%s+",cajas[N-1][j].ABAJO%2?"----":"    ");
     }
 }
 
@@ -213,22 +213,22 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 int pared_check(struct caja tablero[][N], int x, int y, int p){
 	switch(p){
 		case 0:
-			if (tablero[x][y].ARRIBA==TRUE){
+			if (tablero[x][y].ARRIBA%2 == CERRADA){
 				return 0;
 			}
 			break;
 		case 1:
-			if (tablero[x][y].ABAJO==TRUE){
+			if (tablero[x][y].ABAJO%2 == CERRADA){
 				return 0;
 			}
 			break;
 		case 2:
-			if (tablero[x][y].DER==TRUE){
+			if (tablero[x][y].DER%2 == CERRADA){
 				return 0;
 			}
 			break;
 		case 3:
-			if (tablero[x][y].IZQ==TRUE){
+			if (tablero[x][y].IZQ%2 == CERRADA){
 				return 0;
 			}
 			break;
@@ -253,7 +253,7 @@ int mov_usuario(struct caja tablero[][N]){
 		scanf("%d, %d", &f, &c);
 	}
 	//Si la caja que eligio esta cerrada vuelve a pedir NO COMPRUEBA QUE ESTEN DENTRO DE RANGO
-	while(!tablero[f][c].abierta){
+	while(tablero[f][c].pCerradas == 4){
 		printf("\nLa caja seleccionada esta cerrada. Vuelva a elegir: ");
 		scanf("%d, %d", &f, &c);
 	}
@@ -293,7 +293,7 @@ int mov_pc(struct caja tablero[][N]){
 	//Seleccion de coordenadas de caja
 	int fi= rand()% N;
 	int co = rand()% N;
-	while(!tablero[fi][co].abierta){		//Elige hasta encontrar una caja abierta
+	while(tablero[fi][co].pCerradas == 4){		//Elige hasta encontrar una caja abierta
 		fi= rand()% N;
 		co = rand()% N;
 	}
