@@ -19,12 +19,23 @@ enum boolean {FALSE=0, TRUE=1};
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
 struct caja {
-    //estos atributos almacenan info de 1 bit (0 o 1)
-    unsigned int abierta:1;  //indica si la caja tiene todas sus paredes
-    unsigned int ARRIBA :1;
-    unsigned int ABAJO  :1;
-    unsigned int IZQ    :1;
-    unsigned int DER    :1;
+	/*Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
+	 * 		- 0 : esta 'abierta'
+	 * 		- 1 : esta 'cerrada'
+	 * 		- 2 : esta abierta pero la caja contigua tiene pCerradas=2
+	 * 		- 3 : esta cerrada y la caja contigua tiene pCerradas=2
+	 *
+	 *
+	 *El peso de una caja indica cuantas cajas alrededor suyo tienen pCerradas=2
+	 * 		- Cada caja ady que cumpla esa condicion le agrega un peso=2
+	 * 		- Por tanto  0 <= peso <= 8
+	 */
+	unsigned int peso;
+    unsigned int pCerradas;  //indica la cantidad de paredes cerradas
+    unsigned int ARRIBA :2;
+    unsigned int ABAJO  :2;
+    unsigned int IZQ    :2;
+    unsigned int DER    :2;
 };
 
 
