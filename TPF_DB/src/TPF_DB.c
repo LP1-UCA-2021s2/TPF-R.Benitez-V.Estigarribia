@@ -114,6 +114,32 @@ void InitBoxes(struct caja cajas[][N]){
 }
 
 
+//Se actualiza el peso de las cajas adyacentes a caja[x][y]
+void ActualizarPeso(struct caja caja[][N], int x, int y){
+	/* Si la caja en (x,y) tiene pCerradas==2 se llama esta funcion
+	 * que a cada caja adyacente le suma un PESO en la pared correspondiente
+	 * (la pared 'pegada' a caja[x][y])
+	 */
+
+	if(x-1 >= 0){  //caja de arriba
+		caja[x-1][y].ABAJO += PESO;
+		caja[x-1][y].peso += PESO;
+	}
+	if(x+1 < N){  //caja de abajo
+		caja[x+1][y].ARRIBA += PESO;
+		caja[x+1][y].peso += PESO;
+	}
+	if(y-1 >= 0){  //caja de la izquierda
+		caja[x][y-1].DER += PESO;
+		caja[x][y-1].peso += PESO;
+	}
+	if(y+1 < N){  //caja de la derecha
+		caja[x][y+1].IZQ += PESO;
+		caja[x][y+1].peso += PESO;
+	}
+}
+
+
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso
 int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	//Se agrega una pared p a la caja en tablero[x][y]
@@ -121,54 +147,63 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	switch(p){
 		//Agrega arriba
 		case 0:
-			tablero[x][y].ARRIBA=TRUE;
-			//Se agrega la pared a la cajas adyacente de la caja actual
+			tablero[x][y].ARRIBA += CERRADA;
+			//Se agrega tambien la pared a la caja adyacente
 			if(x-1>=0)
 			{
-				if(tablero[x-1][y].ABAJO==FALSE){  //condicion de ruptura (de la funcion recursiva)
+				if(tablero[x-1][y].ABAJO%2 == ABIERTA){  //condicion de ruptura (de la funcion recursiva)
 					cajasCerradas = AgregarPared(tablero, x-1, y, 1);
 				}
 			}
 			break;
 		//Agrega abajo
 		case 1:
-			tablero[x][y].ABAJO=TRUE;
+			tablero[x][y].ABAJO += CERRADA;
 
 			if(x+1<N)
 			{
-				if(tablero[x+1][y].ARRIBA==FALSE){
+				if(tablero[x+1][y].ARRIBA%2 == ABIERTA){
 					cajasCerradas = AgregarPared(tablero, x+1, y, 0);
 				}
 			}
 			break;
 		//Agrega a la derecha
 		case 2:
-			tablero[x][y].DER=TRUE;
+			tablero[x][y].DER += CERRADA;
 
 			if(y+1<N)
 			{
-				if(tablero[x][y+1].IZQ==FALSE){
+				if(tablero[x][y+1].IZQ%2 == ABIERTA){
 					cajasCerradas = AgregarPared(tablero, x, y+1, 3);
 				}
 			}
 			break;
 		//Agrega a la izquierda
 		case 3:
-			tablero[x][y].IZQ=TRUE;
+			tablero[x][y].IZQ += CERRADA;
 
 			if(y-1>=0)
 			{
-				if(tablero[x][y-1].DER==FALSE){
+				if(tablero[x][y-1].DER%2 == ABIERTA){
 					cajasCerradas = AgregarPared(tablero, x, y-1, 2);
 				}
 			}
 			break;
 	}
+
+	//suma una pared cerrada
+	tablero[x][y].pCerradas += 1;
+
+	//Actualiza el peso de las cajas adyacentes
+	if(tablero[x][y].pCerradas == 2){
+		ActualizarPeso(tablero, x, y);
+	}
+
 	//Controla si la jugada realizada cerro la caja actual
-	if (tablero[x][y].ARRIBA && tablero[x][y].ABAJO && tablero[x][y].DER && tablero[x][y].IZQ){
-		tablero[x][y].abierta = FALSE;
+	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;
 	}
+
 
 	return cajasCerradas;
 }
