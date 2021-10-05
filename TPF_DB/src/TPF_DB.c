@@ -20,6 +20,8 @@ enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas 
 
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
+int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio
+
 
 struct caja {
 	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
@@ -238,11 +240,12 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 
 
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento
-int mov_usuario(struct caja tablero[][N]){
+int mov_usuario(struct caja tablero[][N], int *cajasConvenientes){
 	//Datos a ingresar
     int f = 0;  //fila
     int c = 0;  //columna
     int p = 0;  //pared
+
 
 	printf("\nIngrese las coordenadas de la caja [fila, columna]: ");
 	scanf("%d, %d", &f, &c);
@@ -258,6 +261,7 @@ int mov_usuario(struct caja tablero[][N]){
 		scanf("%d, %d", &f, &c);
 	}
 
+
 	//Pedir pared a cerrar
 	printf("\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: ");
 	bueno:
@@ -271,52 +275,126 @@ int mov_usuario(struct caja tablero[][N]){
 			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
 		}
 
+
 	//Se hace el movimiento
 	int cajasCerradas;
 	cajasCerradas = AgregarPared(tablero, f, c, p);
 
-	//suma los puntos acorde a la cant de cajas cerradas
+	//Suma los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
 		puntos[1] += 10 * cajasCerradas;
 		printf("\nHas cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[1]);
-		return cajasCerradas;
 	}
+
+
+	//Guardamos la posicion de la caja que acaba de seleccionarse (para la IA hehe)
+	ultCoords[0] = f;
+	ultCoords[1] = c;
+
+	//Actualizar cant de cajas convenientes restantes
+	if(tablero[f][c].pCerradas==2)
+		*cajasConvenientes -= 1;
+
+
 	return cajasCerradas;
 
 }
 
 
 //Movimiento de la pc de manera random, retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja tablero[][N]){
-	srand(time(NULL));
-	//Seleccion de coordenadas de caja
-	int fi= rand()% N;
-	int co = rand()% N;
-	while(tablero[fi][co].pCerradas == 4){		//Elige hasta encontrar una caja abierta
-		fi= rand()% N;
-		co = rand()% N;
-	}
-	printf("\nCoordenadas de la caja: %d, %d", fi, co);
+int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *cajasConvenientes){
+	/* Hace un movimiento en una caja random o en la fila y columna indicadas.
+	 *
+	 * Mov random:
+	 * - Si absRandom==True, hace un movimiento absolutamente random.
+	 * - De lo contrario elige una caja random que ademas sea una caja conveniente (pCerradas!=2).
+	 */
 
-	//Elige pared a cerrar
-	int pa = rand()% 4;
-	while(pared_check(tablero, fi, co, pa)==0){		//Elige hasta encontrar una pared abierta
-		pa = rand()% 4;
+	srand(time(NULL));
+	int cajasCerradas, pared;
+
+	//Si en (fila, columna) no hay una caja valida, se elige coordenadas random hasta encontrar una.
+	if(absRandom)
+	{
+		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
+			fila = rand()% N;
+			columna = rand()% N;
+		}
 	}
-	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
+	else
+	{
+		while(tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas==2){  //con un criterio adicional
+			fila= rand()% N;
+			columna = rand()% N;
+		}
+	}
+	printf("\nCoordenadas de la caja: %d, %d", fila, columna);
+
+
+	//Ahora elige pared random a cerrar
+	pared = rand()% 4;
+	while(pared_check(tablero, fila, columna, pared) == 0){		//Elige hasta encontrar una pared abierta
+		pared = rand()% 4;
+	}
+	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pared);
+
 
 	//Se hace el movimiento
-	int cajasCerradas;
-	cajasCerradas = AgregarPared(tablero, fi, co, pa);
+	cajasCerradas = AgregarPared(tablero, fila, columna, pared);
 
-	//se suman los puntos acorde a la cant de cajas cerradas
+	//Se suman los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
 		puntos[0] += 10 * cajasCerradas;
 		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
-		return cajasCerradas;
 	}
+
+
+	//Guardamos la posicion de la caja que acaba de seleccionarse? sirve para tests PCvsPC
+	ultCoords[0] = fila;
+	ultCoords[1] = columna;
+
+	//Actualizar cant de cajas convenientes restantes
+	if(tablero[fila][columna].pCerradas==2)
+		*cajasConvenientes -= 1;
+
+
+	return cajasCerradas;
+}
+
+
+int JuegaPC(struct caja tablero[][N], int *cajasConvenientes){
+	/* Hace un movimiento evitando las cajas que ya tengan dos paredes << pCerradas==2 >>
+	 * (ya que al agregarle la tercera le daria ventaja al oponente)
+	 *
+	 * Tambien, intenta realizar el movimiento en la ultima caja seleccionada por el oponente,
+	 * ya que es altamente probable realizar un movimiento conveniente en esa caja
+	 *
+	 *  Algunas variables utilizadas:
+	 * 		cajasAbiertas: cantidad total de cajas abiertas restantes.
+	 * 		cajasConvenientes: cantidad de cajas con << pCerradas != 2 >>.
+	 * 		cajasCerradas: cantidad de cajas cerradas en una jugada (0, 1 o 2).
+	 * */
+
+	srand(time(NULL));
+	int fila, columna, cajasCerradas;
+	fila = ultCoords[0];
+	columna = ultCoords[1];
+
+	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
+	if( tablero[fila][columna].pCerradas==0 || *cajasConvenientes==0 )
+	{
+		fila = rand()%N;
+		columna = rand()%N;
+		cajasCerradas = mov_pc(tablero, fila, columna, 1, cajasConvenientes);
+	}
+	else if( *cajasConvenientes != 0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
+	{
+		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
+		cajasCerradas = mov_pc(tablero, fila, columna, 0, cajasConvenientes);
+	}
+
 	return cajasCerradas;
 }
 
@@ -338,18 +416,21 @@ int main(int argc, char *argv[]){
 	PrintBox(tablero);
 	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
 
+
 	//Ejecucion del juego
 	int repite;  //indica si se repite el turno o no
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
+	int cajasConvenientes = N*N;
+
 	while (cajasAbiertas){
 
 		if (turno == 1){ 	//Juega humano
 			printf("\n\n 		Juega usted\n");
-			repite = mov_usuario(tablero);
+			repite = mov_usuario(tablero, &cajasConvenientes);
 
 		}else if (turno == 0){  //Juega PC
 			printf("\n\n 		Juega la computadora\n");
-			repite = mov_pc(tablero);
+			repite = JuegaPC(tablero, &cajasConvenientes);
 		}
 
 		PrintBox(tablero);
@@ -361,6 +442,7 @@ int main(int argc, char *argv[]){
 
 		cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
 	}
+
 
 	//Mensajes fin de juego
 	printf("\n\n 		TERMINO EL JUEGO");
