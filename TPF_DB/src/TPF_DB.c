@@ -288,8 +288,8 @@ int mov_usuario(struct caja tablero[][N]){
 
 
 //Movimiento de la pc de manera random, retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja tablero[][N]){
-	srand(time(NULL));
+int mov_pc(struct caja tablero[][N], int print, int turno, int seed){
+	srand(seed+time(NULL));
 	//Seleccion de coordenadas de caja
 	int fi= rand()% N;
 	int co = rand()% N;
@@ -297,14 +297,12 @@ int mov_pc(struct caja tablero[][N]){
 		fi= rand()% N;
 		co = rand()% N;
 	}
-	printf("\nCoordenadas de la caja: %d, %d", fi, co);
 
 	//Elige pared a cerrar
 	int pa = rand()% 4;
 	while(pared_check(tablero, fi, co, pa)==0){		//Elige hasta encontrar una pared abierta
 		pa = rand()% 4;
 	}
-	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pa);
 
 	//Se hace el movimiento
 	int cajasCerradas;
@@ -312,21 +310,22 @@ int mov_pc(struct caja tablero[][N]){
 
 	//se suman los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
-		puntos[0] += 10 * cajasCerradas;
-		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
-		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
-		return cajasCerradas;
+		puntos[turno] += 10 * cajasCerradas;
+		if(print){
+			printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
+			printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[turno]);
+		}
 	}
 	return cajasCerradas;
 }
 
 
 
-int main(int argc, char *argv[]){
-	nombre();  //verificar
-	int turno = jugador();  //verificar
-	color();  //hay que modificar
-	N = dim_matriz()-1;  //modificar dim_matriz HACE MAL LAS COMPROBACIONES
+int DotsNBoxes(int print, int dim){
+
+	N = dim;
+
+	int turno = 0;
 
 	//Inicializa puntajes
 	puntos[0] = 0;
@@ -335,42 +334,81 @@ int main(int argc, char *argv[]){
 	//Creacion de tablero
 	struct caja tablero[N][N];
 	InitBoxes(tablero);
-	PrintBox(tablero);
-	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
+	if(print)
+		printf("\n\n=================== NEW GAME ==================\nLa matriz es de: %d x %d \n", N+1, N+1);
 
 	//Ejecucion del juego
 	int repite;  //indica si se repite el turno o no
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
-	while (cajasAbiertas){
 
-		if (turno == 1){ 	//Juega humano
-			printf("\n\n 		Juega usted\n");
-			repite = mov_usuario(tablero);
+	static int iteracion=0;  //usada para generar numeros random
+		while (cajasAbiertas)
+		{
+			iteracion++;
+				if (turno == 1)
+				{
+					if(print)
+						printf("\n\n 		Juega PC 1\n");
+					repite = mov_pc(tablero, print, 1, iteracion);
 
-		}else if (turno == 0){  //Juega PC
-			printf("\n\n 		Juega la computadora\n");
-			repite = mov_pc(tablero);
+				}
+				else if (turno == 0)
+				{
+					if(print)
+						printf("\n\n 		Juega PC 2\n");
+					repite = mov_pc(tablero, print, 0, iteracion);
+				}
+
+				if(print){
+					PrintBox(tablero);
+					printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------\n", puntos[1], puntos[0]);
+				}
+
+
+				if(!repite){	turno = !turno;		}
+
+				cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
 		}
 
-		PrintBox(tablero);
-		printf("\n--------------  PC: %d  | Tu: %d  ------------------\n", puntos[0], puntos[1]);
-
-		if(!repite){	//si la cant de cajas cerradas es cero, cambia el turno
-			turno = !turno;
+		if(print)
+		{
+			//Mensajes fin de juego
+			printf("\n\n 		TERMINO EL JUEGO");
+			if (puntos[0] > puntos[1]){
+				printf("\nPC 2 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
+			}else if(puntos[0] == puntos[1]){
+				printf("\nEMPATEEE         PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
+			}else{
+				printf("\nPC 1 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
+			}
+		}
+		if (puntos[0] > puntos[1]){
+			return 0;
+		}else if(puntos[0] == puntos[1]){
+			return -1;
+		}else{
+			return 1;
 		}
 
-		cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
-	}
+}
 
-	//Mensajes fin de juego
-	printf("\n\n 		TERMINO EL JUEGO");
-	if (puntos[0] > puntos[1]){
-		printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
-	}else if(puntos[0] == puntos[1]){
-		printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
-	}else{
-		printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
-	}
 
+
+int main(){
+	int partGanadas[] = {0, 0, 0};
+	int times, i, ganador;
+	printf("Times: ");
+	scanf("%d", &times);
+
+	for(i=1; i <= times; i++){
+		ganador = DotsNBoxes(0, 3);
+		if(ganador == 1)
+			partGanadas[1] += 1;
+		else if(ganador == 0)
+			partGanadas[0] += 1;
+		else
+			partGanadas[2] += 1;
+	}
+	printf("\nRESULTADOS:\n\tPC 1: %d\n\tPC 2: %d\n\tEmpates: %d", partGanadas[1], partGanadas[0], partGanadas[2]);
 	return 0;
 }
