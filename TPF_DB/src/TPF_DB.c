@@ -142,6 +142,35 @@ void ActualizarPeso(struct caja caja[][N], int x, int y){
 }
 
 
+
+int pCerradas2(struct caja caja[][N], int i, int j, int p){
+	switch(p){
+	case 0:
+		if(i-1 >= 0)
+			if(caja[i-1][j].pCerradas==2)
+				return 1;
+		break;
+	case 1:
+		if(i+1 < N)
+			if(caja[i+1][j].pCerradas==2)
+				return 1;
+		break;
+	case 2:
+		if(j+1 < N)
+			if(caja[i][j+1].pCerradas==2)
+				return 1;
+		break;
+	case 3:
+		if(j-1 >= 0)
+			if(caja[i][j-1].pCerradas==2)
+				return 1;
+		break;
+	}
+
+	return 0;
+}
+
+
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso
 int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	//Se agrega una pared p a la caja en tablero[x][y]
@@ -295,7 +324,7 @@ int mov_usuario(struct caja tablero[][N], int *cajasConvenientes){
 	//Actualizar cant de cajas convenientes restantes
 	if(tablero[f][c].pCerradas==2)
 		*cajasConvenientes -= 1;
-
+	*cajasConvenientes -= pCerradas2(tablero, f, c, p);
 
 	return cajasCerradas;
 
@@ -329,7 +358,8 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 			columna = rand()% N;
 		}
 	}
-	printf("\nCoordenadas de la caja: %d, %d", fila, columna);
+	if(print)
+		printf("\nCoordenadas de la caja: %d, %d", fila, columna);
 
 
 	//Ahora elige pared random a cerrar
@@ -337,6 +367,7 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 	while(pared_check(tablero, fila, columna, pared) == 0){		//Elige hasta encontrar una pared abierta
 		pared = rand()% 4;
 	}
+
 
 	//Se hace el movimiento
 	cajasCerradas = AgregarPared(tablero, fila, columna, pared);
@@ -358,13 +389,14 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 	//Actualizar cant de cajas convenientes restantes
 	if(tablero[fila][columna].pCerradas==2)
 		*cajasConvenientes -= 1;
+	*cajasConvenientes -= pCerradas2(tablero, fila, columna, pared);
 
 
 	return cajasCerradas;
 }
 
 
-int JuegaPC(struct caja tablero[][N], int *cajasConvenientes){
+int JuegaPC(struct caja tablero[][N], int *cajasConvenientes, int print, int turno, int seed){
 	/* Hace un movimiento evitando las cajas que ya tengan dos paredes << pCerradas==2 >>
 	 * (ya que al agregarle la tercera le daria ventaja al oponente)
 	 *
@@ -387,17 +419,16 @@ int JuegaPC(struct caja tablero[][N], int *cajasConvenientes){
 	{
 		fila = rand()%N;
 		columna = rand()%N;
-		cajasCerradas = mov_pc(tablero, fila, columna, 1, cajasConvenientes);
+		cajasCerradas = mov_pc(tablero, fila, columna, 1, cajasConvenientes, print, turno, seed);
 	}
 	else if( *cajasConvenientes != 0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
 	{
 		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
-		cajasCerradas = mov_pc(tablero, fila, columna, 0, cajasConvenientes);
+		cajasCerradas = mov_pc(tablero, fila, columna, 0, cajasConvenientes, print, turno, seed);
 	}
 
 	return cajasCerradas;
 }
-
 
 
 int DotsNBoxes(int print, int dim){
@@ -422,53 +453,53 @@ int DotsNBoxes(int print, int dim){
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 	int cajasConvenientes = N*N;
 	static int iteracion=0;  //usada para generar numeros random
-		while (cajasAbiertas)
-		{
-			iteracion++;
-				if (turno == 1)
-				{
-					if(print)
-						printf("\n\n 		Juega PC 1\n");
-					repite = mov_pc(tablero, print, 1, iteracion);
+	while (cajasAbiertas)
+	{
+		iteracion++;
+			if (turno == 1)
+			{
+				if(print)
+					printf("\n\n 		Juega PC 1\n");
+				repite = mov_pc(tablero, 0, 0, 1, &cajasConvenientes, print, 1, iteracion);
 
-				}
-				else if (turno == 0)
-				{
-					if(print)
-						printf("\n\n 		Juega PC 2\n");
-					repite = mov_pc(tablero, print, 0, iteracion);
-				}
-
-				if(print){
-					PrintBox(tablero);
-					printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------\n", puntos[1], puntos[0]);
-				}
-
-
-				if(!repite){	turno = !turno;		}
-
-				cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
-		}
-
-		if(print)
-		{
-			//Mensajes fin de juego
-			printf("\n\n 		TERMINO EL JUEGO");
-			if (puntos[0] > puntos[1]){
-				printf("\nPC 2 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
-			}else if(puntos[0] == puntos[1]){
-				printf("\nEMPATEEE         PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
-			}else{
-				printf("\nPC 1 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
 			}
-		}
+			else if (turno == 0)
+			{
+				if(print)
+					printf("\n\n 		Juega PC 2\n");
+				repite = JuegaPC(tablero, &cajasConvenientes, print, 0, iteracion);
+			}
+
+			if(print){
+				PrintBox(tablero);
+				printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------\n", puntos[1], puntos[0]);
+			}
+
+
+			if(!repite){	turno = !turno;		}
+
+			cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
+	}
+
+	if(print)
+	{
+		//Mensajes fin de juego
+		printf("\n\n 		TERMINO EL JUEGO");
 		if (puntos[0] > puntos[1]){
-			return 0;
+			printf("\nPC 2 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
 		}else if(puntos[0] == puntos[1]){
-			return -1;
+			printf("\nEMPATEEE         PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
 		}else{
-			return 1;
+			printf("\nPC 1 ganadooo :)  PC 1:%d        PC 2:%d\n\n", puntos[1], puntos[0]);
 		}
+	}
+	if (puntos[0] > puntos[1]){
+		return 0;
+	}else if(puntos[0] == puntos[1]){
+		return -1;
+	}else{
+		return 1;
+	}
 
 }
 
@@ -481,7 +512,7 @@ int main(){
 	scanf("%d", &times);
 
 	for(i=1; i <= times; i++){
-		ganador = DotsNBoxes(0, 3);
+		ganador = DotsNBoxes(1, 3);
 		if(ganador == 1)
 			partGanadas[1] += 1;
 		else if(ganador == 0)
