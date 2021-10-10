@@ -16,6 +16,8 @@
 
 int N = 0;  //Dimension de la matriz de cajas (no del tablero)
 
+int cajas2p, cajas3p;
+
 enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas para operar con las cajas
 
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
@@ -142,35 +144,6 @@ void ActualizarPeso(struct caja caja[][N], int x, int y){
 }
 
 
-
-int pCerradas2(struct caja caja[][N], int i, int j, int p){
-	switch(p){
-	case 0:
-		if(i-1 >= 0)
-			if(caja[i-1][j].pCerradas==2)
-				return 1;
-		break;
-	case 1:
-		if(i+1 < N)
-			if(caja[i+1][j].pCerradas==2)
-				return 1;
-		break;
-	case 2:
-		if(j+1 < N)
-			if(caja[i][j+1].pCerradas==2)
-				return 1;
-		break;
-	case 3:
-		if(j-1 >= 0)
-			if(caja[i][j-1].pCerradas==2)
-				return 1;
-		break;
-	}
-
-	return 0;
-}
-
-
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso
 int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	//Se agrega una pared p a la caja en tablero[x][y]
@@ -233,6 +206,18 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 	//Controla si la jugada realizada cerro la caja actual
 	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;
+		cajas3p -= 1;
+	}
+
+
+	//Actualizar cant de cajas convenientes restantes
+	if(tablero[x][y].pCerradas==2)
+		cajas2p += 1;
+	if(tablero[x][y].pCerradas==3){
+		cajas3p += 1;
+		//Guardamos la posicion de la caja que acaba de seleccionarse? sirve para tests PCvsPC
+		ultCoords[0] = x;
+		ultCoords[1] = y;
 	}
 
 
@@ -269,7 +254,7 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 
 
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento
-int mov_usuario(struct caja tablero[][N], int *cajasConvenientes){
+int mov_usuario(struct caja tablero[][N]){
 	//Datos a ingresar
     int f = 0;  //fila
     int c = 0;  //columna
@@ -305,6 +290,11 @@ int mov_usuario(struct caja tablero[][N], int *cajasConvenientes){
 		}
 
 
+	//Guardamos la posicion de la caja que acaba de seleccionarse (para la IA hehe)
+	ultCoords[0] = f;
+	ultCoords[1] = c;
+
+
 	//Se hace el movimiento
 	int cajasCerradas;
 	cajasCerradas = AgregarPared(tablero, f, c, p);
@@ -317,22 +307,13 @@ int mov_usuario(struct caja tablero[][N], int *cajasConvenientes){
 	}
 
 
-	//Guardamos la posicion de la caja que acaba de seleccionarse (para la IA hehe)
-	ultCoords[0] = f;
-	ultCoords[1] = c;
-
-	//Actualizar cant de cajas convenientes restantes
-	if(tablero[f][c].pCerradas==2)
-		*cajasConvenientes -= 1;
-	*cajasConvenientes -= pCerradas2(tablero, f, c, p);
-
 	return cajasCerradas;
 
 }
 
 
 //Movimiento de la pc de manera random, retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *cajasConvenientes, int print, int turno, int seed){
+int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int print, int turno, int seed){
 	/* Hace un movimiento en una caja random o en la fila y columna indicadas.
 	 *
 	 * Mov random:
@@ -353,9 +334,16 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 	}
 	else
 	{
-		while(tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas==2){  //con un criterio adicional
-			fila= rand()% N;
-			columna = rand()% N;
+		if(cajas3p){
+			while(tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas!=3 ){  //con un criterio adicional
+				fila= rand()% N;
+				columna = rand()% N;
+			}
+		}else{
+			while(tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas==2 ){  //con un criterio adicional
+				fila= rand()% N;
+				columna = rand()% N;
+			}
 		}
 	}
 	if(print)
@@ -367,6 +355,10 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 	while(pared_check(tablero, fila, columna, pared) == 0){		//Elige hasta encontrar una pared abierta
 		pared = rand()% 4;
 	}
+
+	//Guardamos la posicion de la caja que acaba de seleccionarse? sirve para tests PCvsPC
+	ultCoords[0] = fila;
+	ultCoords[1] = columna;
 
 
 	//Se hace el movimiento
@@ -382,21 +374,11 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int *
 	}
 
 
-	//Guardamos la posicion de la caja que acaba de seleccionarse? sirve para tests PCvsPC
-	ultCoords[0] = fila;
-	ultCoords[1] = columna;
-
-	//Actualizar cant de cajas convenientes restantes
-	if(tablero[fila][columna].pCerradas==2)
-		*cajasConvenientes -= 1;
-	*cajasConvenientes -= pCerradas2(tablero, fila, columna, pared);
-
-
 	return cajasCerradas;
 }
 
 
-int JuegaPC(struct caja tablero[][N], int *cajasConvenientes, int print, int turno, int seed){
+int JuegaPC(struct caja tablero[][N], int print, int turno, int seed){
 	/* Hace un movimiento evitando las cajas que ya tengan dos paredes << pCerradas==2 >>
 	 * (ya que al agregarle la tercera le daria ventaja al oponente)
 	 *
@@ -415,16 +397,16 @@ int JuegaPC(struct caja tablero[][N], int *cajasConvenientes, int print, int tur
 	columna = ultCoords[1];
 
 	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
-	if( tablero[fila][columna].pCerradas==0 || *cajasConvenientes==0 )
+	if((tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p)
 	{
 		fila = rand()%N;
 		columna = rand()%N;
-		cajasCerradas = mov_pc(tablero, fila, columna, 1, cajasConvenientes, print, turno, seed);
+		cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno, seed);
 	}
-	else if( *cajasConvenientes != 0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
+	else if( cajas2p!=N*N || cajas3p!=0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
 	{
 		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
-		cajasCerradas = mov_pc(tablero, fila, columna, 0, cajasConvenientes, print, turno, seed);
+		cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno, seed);
 	}
 
 	return cajasCerradas;
@@ -451,23 +433,25 @@ int DotsNBoxes(int print, int dim){
 	//Ejecucion del juego
 	int repite;  //indica si se repite el turno o no
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
-	int cajasConvenientes = N*N;
+	cajas2p = cajas3p = 0;
+
 	static int iteracion=0;  //usada para generar numeros random
 	while (cajasAbiertas)
 	{
-		iteracion++;
+			iteracion++;
+
 			if (turno == 1)
 			{
 				if(print)
 					printf("\n\n 		Juega PC 1\n");
-				repite = mov_pc(tablero, 0, 0, 1, &cajasConvenientes, print, 1, iteracion);
+				repite = mov_pc(tablero, 0, 0, 1, print, 1, iteracion);
 
 			}
 			else if (turno == 0)
 			{
 				if(print)
 					printf("\n\n 		Juega PC 2\n");
-				repite = JuegaPC(tablero, &cajasConvenientes, print, 0, iteracion);
+				repite = JuegaPC(tablero, print, 0, iteracion);
 			}
 
 			if(print){
