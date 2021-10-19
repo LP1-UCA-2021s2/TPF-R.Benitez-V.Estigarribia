@@ -4,7 +4,7 @@
  Author      : R.Benitez || V.Estigarribia
  Version     :
  Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
+ Description : Definicion de funciones declaradas en "funciones.h"
  ============================================================================
  */
 
@@ -12,55 +12,96 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "funciones.h"
+#include "declaraciones.h"
 
-int N = 0;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
-
-//Variables que usa la IA para saber que cajas buscar en una jugada.
-int cajas2p = 0;  /* Cantidad de cajas que tienen o HAN TENIDO 2 paredes cerradas. Util para saber si aun es posible evitar cajas con pCerradas==2
-				   *[ 0 <= cajas2p <= N*N ] */
-
-int cajas3p = 0;  /*Cantidad de cajas que TIENEN 3 paredes cerradas. Si hay alguna caja con pCerradas==3 la IA lo busca hasta encontrarlo.
- 	 	 	 	   *[ 0 <= cajas3p <= 2 ] */
 
 enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas para operar con las cajas
 
-int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
 int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio (utilizada por la IA)
 
 
-struct caja {
-	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
-	 * 		- 0 : esta 'abierta'
-	 * 		- 1 : esta 'cerrada'
-	 * 		- 2 : esta abierta pero la caja contigua tiene pCerradas=2
-	 * 		- 3 : esta cerrada y la caja contigua tiene pCerradas=2
-	 *
-	 *
-	 * El peso de una caja indica cuantas cajas alrededor suyo tienen pCerradas=2
-	 * 		- Cada caja ady que cumpla esa condicion le agrega un peso=2
-	 * 		- La pared pegada a dicha caja tambien adquiere PESO
-	 * 		- Por tanto  0 <= peso <= 8
-	 *
-	 *
-	 * Como saber si una caja esta 'abierta' o 'cerrada' independientemente de su peso?
-	 * 		Con este sistema, la forma de hacer esta comprobacion es
-	 *		usando el operador % (modulo) con el valor PESO
-	 *		- PARED%PESO dara 1 si PARED esta cerrada
-	 *		- PARED%PESO dara 0 si PARED esta abierta
-	 *
-	 */
 
-	//Declaracion de atributos de caja
-	unsigned int peso;
-    unsigned int pCerradas;  //indica la cantidad de paredes cerradas
-    unsigned int ARRIBA :2;
-    unsigned int ABAJO  :2;
-    unsigned int IZQ    :2;
-    unsigned int DER    :2;
-};
+//Pide el nombre del usuario
+void nombre(){
+	char nombre[20];
+	printf("Ingrese su nombre por favor: ");
+	fgets(nombre, 20, stdin);
+	printf("\nTu nombre es: %s", nombre);
+}
 
+//Decide quien inicia
+int jugador(){
+	int opciones = 0;
+	//Consulta si desea elegir o no
+	printf("\nDesea elegir quien comienza? --> 1 = SI || 0 = NO: ");
+	scanf("%d", &opciones);
+	while ( opciones !=1 && opciones!= 0 ){  			//Pide el valor hasta que ingrese el correcto
+		printf("\nError, el valor ingresado no corresponde. Vuelva a ingresar por favor (1 = SI || 0 = NO): ");
+		scanf("%d", &opciones);
+	}
+
+	if(opciones == 1){
+		printf("\nQuien iniciara el juego?--> 1 = Usted || 0 = La computadora : ");
+		scanf("%d", &opciones);
+		while (opciones !=1 && opciones != 0){		//Pide el valor hasta que ingrese el correcto
+			printf("\nError, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = Usted || 0 = La computadora): ");
+			scanf("%d", &opciones);
+		}
+	}else{
+		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
+		srand(time(NULL));
+		opciones=rand() % 2;
+	}
+	if (opciones == 1){
+		printf("  Comienza usted\n");
+	}else{
+		printf("  Comienza la computadora\n");
+	}
+
+	return opciones;
+}
+
+//Decide el color que empieza
+int color(){
+	int c = 0;
+	printf("\nInician los Verdes o Rojos?--> 1 = VERDE || 0 = ROJO: ");
+	scanf("%d", &c);
+	while (c !=1 && c != 0){		//Pide el valor hasta que ingrese el correcto
+		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = VERDE || 0 = ROJO): ");
+		scanf("%d", &c);
+	}
+	if (c == 1){
+			printf("  Comienzan los Verdes\n");
+		}else{
+			printf("  Comienza las Rojas\n");
+	}
+	return c;
+}
+
+//Define el tamaño de la matriz
+int dim_matriz(){
+	int dim, a = 0;
+	printf("\nDesea elegir la dimension de la matriz? --> 1 = SI || 0 = NO: ");
+	scanf("%d", &a);
+	while ( a !=1 && a!= 0 ){  			//Pide el valor hasta que ingrese el correcto
+		printf("\nError, el valor ingresado no corresponde. Vuelva a ingresar por favor (1 = SI || 0 = NO): ");
+		scanf("%d", &a);
+	}
+
+	//Ingresa el tamaño
+	if (a == 1){
+		printf("\nPor favor ingrese la dimension de la matriz: ");
+		scanf("%d", &dim);
+	}else{
+		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
+		dim=rand() % 15;
+		while (dim <= 1){
+			dim=rand() % 15;
+		}
+	}
+	return dim;
+}
 
 
 //Imprime el tablero en el terminal
@@ -428,60 +469,3 @@ int JuegaPC(struct caja tablero[][N]){
 }
 
 
-
-int main(int argc, char *argv[]){
-	nombre();  //verificar
-	int turno = jugador();  //verificar
-	color();  //hay que modificar
-	N = dim_matriz()-1;  //modificar dim_matriz HACE MAL LAS COMPROBACIONES
-
-	//Inicializa puntajes
-	puntos[0] = 0;
-	puntos[1] = 0;
-
-	//Creacion de tablero
-	struct caja tablero[N][N];
-	InitBoxes(tablero);
-	PrintBox(tablero);
-	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
-
-
-	//Ejecucion del juego
-	int repite;  //indica si se repite el turno o no
-	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
-	cajas2p = cajas3p = 0;
-
-	while (cajasAbiertas){
-
-		if (turno == 1){ 	//Juega humano
-			printf("\n\n 		Juega usted\n");
-			repite = mov_usuario(tablero);
-
-		}else if (turno == 0){  //Juega PC
-			printf("\n\n 		Juega la computadora\n");
-			repite = JuegaPC(tablero);
-		}
-
-		PrintBox(tablero);
-		printf("\n--------------  PC: %d  | Tu: %d  ------------------\n", puntos[0], puntos[1]);
-
-		if(!repite){	//si la cant de cajas cerradas es cero, cambia el turno
-			turno = !turno;
-		}
-
-		cajasAbiertas -= repite;  //se le resta la cant de cajas cerradas
-	}
-
-
-	//Mensajes fin de juego
-	printf("\n\n 		TERMINO EL JUEGO");
-	if (puntos[0] > puntos[1]){
-		printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
-	}else if(puntos[0] == puntos[1]){
-		printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
-	}else{
-		printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
-	}
-
-	return 0;
-}
