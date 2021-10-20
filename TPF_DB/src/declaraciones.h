@@ -3,9 +3,8 @@
 #define DECLARACIONES_H_
 
 
-
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
-
+int turno, color;
 
 struct caja {
 	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
@@ -56,9 +55,5 @@ int mov_usuario(struct caja tablero[][N]);
 int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom);
 int JuegaPC(struct caja tablero[][N]);
 
-void nombre();
-int jugador();
-int color();
-int dim_matriz();
 
 #endif /* DECLARACIONES_H_ */

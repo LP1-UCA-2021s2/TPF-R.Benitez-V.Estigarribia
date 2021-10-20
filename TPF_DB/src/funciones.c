@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "declaracionesGTK.h"
 #include "declaraciones.h"
 
 
@@ -22,86 +23,9 @@ int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se e
 
 
 
-//Pide el nombre del usuario
-void nombre(){
-	char nombre[20];
-	printf("Ingrese su nombre por favor: ");
-	fgets(nombre, 20, stdin);
-	printf("\nTu nombre es: %s", nombre);
-}
+char *imagenes[] = {"./IMG/circ.png","./IMG/blanco.png"};
 
-//Decide quien inicia
-int jugador(){
-	int opciones = 0;
-	//Consulta si desea elegir o no
-	printf("\nDesea elegir quien comienza? --> 1 = SI || 0 = NO: ");
-	scanf("%d", &opciones);
-	while ( opciones !=1 && opciones!= 0 ){  			//Pide el valor hasta que ingrese el correcto
-		printf("\nError, el valor ingresado no corresponde. Vuelva a ingresar por favor (1 = SI || 0 = NO): ");
-		scanf("%d", &opciones);
-	}
 
-	if(opciones == 1){
-		printf("\nQuien iniciara el juego?--> 1 = Usted || 0 = La computadora : ");
-		scanf("%d", &opciones);
-		while (opciones !=1 && opciones != 0){		//Pide el valor hasta que ingrese el correcto
-			printf("\nError, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = Usted || 0 = La computadora): ");
-			scanf("%d", &opciones);
-		}
-	}else{
-		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
-		srand(time(NULL));
-		opciones=rand() % 2;
-	}
-	if (opciones == 1){
-		printf("  Comienza usted\n");
-	}else{
-		printf("  Comienza la computadora\n");
-	}
-
-	return opciones;
-}
-
-//Decide el color que empieza
-int color(){
-	int c = 0;
-	printf("\nInician los Verdes o Rojos?--> 1 = VERDE || 0 = ROJO: ");
-	scanf("%d", &c);
-	while (c !=1 && c != 0){		//Pide el valor hasta que ingrese el correcto
-		printf("\n Error, los valores ingresados no son correctos. Vuelva a ingresar por favor (1 = VERDE || 0 = ROJO): ");
-		scanf("%d", &c);
-	}
-	if (c == 1){
-			printf("  Comienzan los Verdes\n");
-		}else{
-			printf("  Comienza las Rojas\n");
-	}
-	return c;
-}
-
-//Define el tamaño de la matriz
-int dim_matriz(){
-	int dim, a = 0;
-	printf("\nDesea elegir la dimension de la matriz? --> 1 = SI || 0 = NO: ");
-	scanf("%d", &a);
-	while ( a !=1 && a!= 0 ){  			//Pide el valor hasta que ingrese el correcto
-		printf("\nError, el valor ingresado no corresponde. Vuelva a ingresar por favor (1 = SI || 0 = NO): ");
-		scanf("%d", &a);
-	}
-
-	//Ingresa el tamaño
-	if (a == 1){
-		printf("\nPor favor ingrese la dimension de la matriz: ");
-		scanf("%d", &dim);
-	}else{
-		//Elige de manera aleatoria numeros menores a 15 pero mayores a 1
-		dim=rand() % 15;
-		while (dim <= 1){
-			dim=rand() % 15;
-		}
-	}
-	return dim;
-}
 
 
 //Imprime el tablero en el terminal
@@ -469,3 +393,89 @@ int JuegaPC(struct caja tablero[][N]){
 }
 
 
+void JuegoNuevo(GtkWidget *widget, gpointer data){
+	gtk_widget_show_all(win_principal);
+	gtk_widget_hide(win_entrada);
+}
+
+
+//Pide el nombre del usuario
+void nombre(GtkWidget *widget, gpointer data){
+	//const gchar *nombre = gtk_entry_get_text (GTK_ENTRY(name_entry));
+	//luego poner el nombre en algun label o algo
+}
+
+void QuienInicia(GtkWidget *widget, gpointer data){
+	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+	if(turno == 2){
+		srand(time(NULL));
+		turno=rand() % 2;
+	}
+}
+
+void Color(GtkWidget *widget, gpointer data){
+	color = gtk_combo_box_get_active(GTK_COMBO_BOX(colour));
+}
+
+//Dimension de la matriz, default = 3
+void DimMatriz(GtkWidget *widget, gpointer data){
+	const gchar *dimension = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
+	int dim = atoi(dimension);
+	if(dim < 3 || dim > 15){
+		N = 3;
+	}else{
+		N = dim-1;
+	}
+}
+
+
+
+
+void tablero_cb(GtkWidget *event_box, GdkEventButton *event, gpointer data){
+	guint i,j;
+	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
+	j = (GUINT_FROM_LE(event->x) / 50);
+
+	if(j%2==1&&i%2==0){
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+	}else{
+		if(j%2==0&&i%2==1){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+		}
+	}
+}
+
+
+GtkWidget *CrearTablero(){
+	int i, j;
+	GtkWidget *imagen; //auxiliar para cargar la imagen
+	GtkWidget *eventbox;
+	eventbox = gtk_event_box_new();
+	grid_tablero = gtk_grid_new();
+	for (i = 0; i < N*2+1; i++) {
+		for (j = 0; j < N*2+1; j++) {
+			if(i%2==0&&j%2==0){
+				imagen = gtk_image_new_from_file(imagenes[0]);
+				gtk_grid_attach(GTK_GRID(grid_tablero), GTK_WIDGET(imagen), j, i, 1, 1);
+			}
+			else{
+				imagen = gtk_image_new_from_file(imagenes[1]);
+				gtk_grid_attach(GTK_GRID(grid_tablero), GTK_WIDGET(imagen), j, i, 1, 1);
+			}
+
+		}
+	}
+	gtk_container_add(GTK_CONTAINER(eventbox), grid_tablero);
+	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(tablero_cb), grid_tablero);
+	return eventbox;
+}
+
+
+
+void IniciarPartida(GtkWidget *widget, gpointer data){
+	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero_j"));
+	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(), TRUE, FALSE, 20);
+
+	gtk_widget_show_all(win_juego);
+	gtk_widget_hide(win_principal);
+}
