@@ -47,13 +47,14 @@ int cajas3p;  /*Cantidad de cajas que TIENEN 3 paredes cerradas. Si hay alguna c
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
 void PrintBox(struct caja **cajas);
-void InitBoxes(struct caja cajas[][N]);
-void ActualizarPeso(struct caja caja[][N], int x, int y);
-int AgregarPared(struct caja tablero[][N], int x, int y, int p);
-int pared_check(struct caja tablero[][N], int x, int y, int p);
-int mov_usuario(struct caja tablero[][N]);
-int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom);
-int JuegaPC(struct caja tablero[][N]);
+void InitBoxes(struct caja **cajas);
+void ActualizarPeso(struct caja **caja, int x, int y);
+int AgregarPared(struct caja **tablero, int x, int y, int p);
+int pared_check(struct caja **tablero, int x, int y, int p);
+int mov_usuario(struct caja **tablero);
+int mov_pc(struct caja **tablero, int fila, int columna, int absRandom);
+int JuegaPC(struct caja **tablero);
+struct caja **TableroNuevo(int size);
 
 
 #endif /* DECLARACIONES_H_ */

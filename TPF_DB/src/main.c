@@ -4,7 +4,6 @@
  *  Created on: 19 oct. 2021
  *      Author: lp1-2021
  */
-
 #include <stdio.h>
 #include "declaracionesGTK.h"
 #include "declaraciones.h"

@@ -54,6 +54,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1766418162" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.link.option.libs.1964025995" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="z"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gtk-3"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gdk-3"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="pangocairo-1.0"/>
@@ -100,6 +101,7 @@
 						<entry flags="UNDEFINED" kind="libraryFile" name="glib-2.0" srcPrefixMapping="" srcRootPath=""/>
 					</externalSetting>
 					<externalSetting contentTypes="org.eclipse.cdt.core.cSource:org.eclipse.cdt.core.cxxSource">
+						<entry flags="NONE" kind="includePath" name="/usr/include/gtk-3.0/unix-print"/>
 						<entry flags="NONE" kind="includePath" name="/usr/include/gtk-3.0"/>
 						<entry flags="NONE" kind="includePath" name="/usr/include/at-spi2-atk/2.0"/>
 						<entry flags="NONE" kind="includePath" name="/usr/include/at-spi-2.0"/>
@@ -120,26 +122,26 @@
 						<entry flags="NONE" kind="includePath" name="/usr/include/blkid"/>
 						<entry flags="NONE" kind="includePath" name="/usr/include/glib-2.0"/>
 						<entry flags="NONE" kind="includePath" name="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/cairo"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/glib-2.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/pixman-1"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/uuid"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/freetype2"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/libpng16"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gtk-3.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/at-spi2-atk/2.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/at-spi-2.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/dbus-1.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/lib/x86_64-linux-gnu/dbus-1.0/include"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gio-unix-2.0"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/cairo"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/pango-1.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/fribidi"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/harfbuzz"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/atk-1.0"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/pixman-1"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/uuid"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/freetype2"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/libpng16"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gdk-pixbuf-2.0"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/libmount"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/blkid"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/include/glib-2.0"/>
-						<entry flags="BUILTIN" kind="includePath" name="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
 						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gtk-3.0/unix-print"/>
 					</externalSetting>
 				</externalSettings>

@@ -15,6 +15,10 @@
 #include "declaracionesGTK.h"
 #include "declaraciones.h"
 
+//Macros usados en Play() unicamente
+#define LINEA_HORIZONTAL (i%2==0 && j%2==1)
+#define LINEA_VERTICAL (i%2==1 && j%2==0)
+
 
 enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas para operar con las cajas
 
@@ -205,7 +209,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 		cajas3p -= 1;  //global
 	}
 
-	puts("\nHEY");
+
 	return cajasCerradas;
 }
 
@@ -393,7 +397,7 @@ int JuegaPC(struct caja **tablero){
 	return cajasCerradas;
 }
 
-
+//Crea el tablero logico
 struct caja **
 TableroNuevo(int size){
 	/*
@@ -448,70 +452,97 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 }
 
 
-//para pasar como argumento a g_signal_connect
-struct data {
-	GtkWidget *widget;
-	struct caja **tablero;
-};
 
 
-void Play(GtkWidget *event_box, GdkEventButton *event, gpointer args){
-	puts("\n\t\tEN PLAY");
+void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
+	/* Encargado de lo que pasa en la ventana del juego en si.
+	 *
+	 * Agrega lineas al tablero en respuesta a los clicks del usuario y
+	 * muestra los cambios en pantalla despues de cada movimiento,
+	 *  ya sea del usuario o de la PC
+	 */
 	guint i,j;  //coords tablero grafico
 	int x, y;  //coords tablero logico (struct caja [][])
-
-	struct data *data = args;
 
 	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
 	j = (GUINT_FROM_LE(event->x) / 50);
 
+	struct caja **tablero = data;
 
-	if(i%2==0 && j%2==1)  //Si i es par y j impar  se agrega una pared ARRIBA a la caja en x, y
+
+	/* Funcionamiento de coordenadas de tablero Grafico -> Logico
+	 *
+	 * El patron que describe las coordenadas de una caja en el tablero logico a partir de las coordenadas
+	 * de una cierta posicion en el tablero grafico es el siguiente:
+	 *
+	 * - [ i par, j impar ] -> CLICK EN LINEA HORIZONTAL
+	 * 		Donde si la linea horizontal no es la correspondiente al 'borde' inferior del tablero:
+	 * 			[x, y] == [i/2, (j-1)/2]	y  se  agrega  una  pared  ARRIBA  a  Caja(x,y)
+	 *
+	 * 		De otro modo:
+	 * 			[x, y] == [(i/2)-1, (j-1)/2]	y  se  agrega  una  pared  ABAJO  a  Caja(x,y)
+	 *
+	 * 		Esto es porque i/2 seria igual a N, y N esta fuera del rango del tablero
+	 *
+	 *
+	 * - [ i impar, j par ] -> CLICK EN LINEA VERTICAL
+	 * 		Donde si la linea vertical no es la correspondiente al 'borde' derecho del tablero:
+	 * 			[x, y] == [(i-1)/2, j/2]	y  se  agrega  una  pared  IZQ  a  Caja(x,y)
+	 *
+	 * 		De otro modo:
+	 * 			[x, y] == [(i-1)/2, (j/2)-1]	y  se  agrega  una  pared  DER  a  Caja(x,y)
+	 *
+	 * 		Esto es porque i/2 seria igual a N, y N esta fuera del rango del tablero
+	 *
+	 * *Caja(x,y)=tablero[x][y]
+	 *
+	 */
+	if(LINEA_HORIZONTAL)
 	{
 		x = i/2;
 		y = (j-1)/2;
 
-		if(x != 2*N){
-			//AgregarPared(data->tablero, x, y, 0);
-			PrintBox(data->tablero);
-		}else{  //Si esta en el limite del tablero (abajo) x=x-1
-			AgregarPared(data->tablero, x-1, y, 1);
+		if(x != N){
+			AgregarPared(tablero, x, y, 0);
+		}else{
+			AgregarPared(tablero, x-1, y, 1);
 		}
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(data->widget),j,i)), "IMG/linea.png");
-	}
-	else
-	{
-		if(i%2==1 && j%2==0)//Si j es par y i impar  se agrega una pared IZQ a la caja en x, y
-		{
-			y = j/2;
-			x = (i-1)/2;
 
-			if(y != 2*N){
-				AgregarPared(data->tablero, x, y, 3);
-			}else{  //Si esta en el limite del tablero y=y-1
-				AgregarPared(data->tablero, x, y-1, 2);
-			}
-			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(data->widget),j,i)), "IMG/lineav.png");
-		}
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
 	}
+	else if(LINEA_VERTICAL)
+	{
+		y = j/2;
+		x = (i-1)/2;
+
+		if(y != N){
+			AgregarPared(tablero, x, y, 3);
+		}else{
+			AgregarPared(tablero, x, y-1, 2);
+		}
+
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+	}
+
+	PrintBox(tablero);
+	puts("\n\n=================================================================\n\n");
 }
 
 
 GtkWidget *CrearTablero(){
-	//Inicializa puntajes
-	puntos[0] = 0;
-	puntos[1] = 0;
-
-	//Creacion de tablero
-	struct caja **tablero = TableroNuevo(N);
-	InitBoxes(tablero);
+	/* Crea el tablero grafico y da comienzo a la partida.
+	 *
+	 * - Retorna el EventBox de la pantalla de juego a IniciarPartida()
+	 * - Llama a Play() en respuesta a <button-press-event> en dicho EventBox
+	 */
 
 	int i, j;
 	GtkWidget *imagen; //auxiliar para cargar la imagen
-	GtkWidget *eventbox;
+	GtkWidget *eventbox;  //EventBox del tablero
 	eventbox = gtk_event_box_new();
-	grid_tablero = gtk_grid_new();
+	grid_tablero = gtk_grid_new();  //Grilla que permite colocar en el EventBox las imagenes dependiendo de las coordenadas del click
 
+	//En estos <for> se 'inicializa' el TABLERO GRAFICO, llendando el EventBox de puntos y espacios en blanco
 	for (i = 0; i < N*2+1; i++) {
 		for (j = 0; j < N*2+1; j++) {
 			if(i%2==0&&j%2==0){
@@ -526,22 +557,31 @@ GtkWidget *CrearTablero(){
 		}
 	}
 
-	printf("\n\n%d\n", N);
+	gtk_container_add(GTK_CONTAINER(eventbox), grid_tablero);  //vincula la grilla al EventBox
 
-	struct data data;
-	data.widget = grid_tablero;
-	data.tablero = tablero;
 
-	gtk_container_add(GTK_CONTAINER(eventbox), grid_tablero);
-	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), &data);
+	//INICIALIAZAR VARIABLES USADAS EN LA LOGICA DEL JUEGO
+	//Inicializa puntajes
+	puntos[0] = 0;
+	puntos[1] = 0;
+
+	//Creacion de TABLERO LOGICO
+	struct caja **tablero = TableroNuevo(N);
+	InitBoxes(tablero);
+	PrintBox(tablero);
+	puts("\n\n=================================================================\n\n");
+
+
+	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()
 
 	return eventbox;
 }
 
 
+//Muestra la pantalla de juego
 void IniciarPartida(GtkWidget *widget, gpointer data){
 	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero_j"));
-	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(), TRUE, FALSE, 20);
+	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(), TRUE, FALSE, 20);  //crea el box del tablero
 
 	gtk_widget_show_all(win_juego);
 	gtk_widget_hide(win_principal);
