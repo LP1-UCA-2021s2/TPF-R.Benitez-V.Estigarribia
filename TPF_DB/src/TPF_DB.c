@@ -413,8 +413,7 @@ int JuegaPC(struct caja **tablero){
 	columna = ultCoords[1];
 
 	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
-	//|| cajas2p==N*N) && !cajas3p
-	if( tablero[0][0].pCerradas==0 )
+	if( (tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p )
 	{
 		fila = rand()%N;
 		columna = rand()%N;
@@ -431,7 +430,7 @@ int JuegaPC(struct caja **tablero){
 
 
 struct caja **
-CrearTablero(int size){
+TableroNuevo(int size){
 	/*
 	* Funcion que crea el tablero dependiendo del tamaño que recibe.
 	* Parametros:
@@ -447,6 +446,8 @@ CrearTablero(int size){
 
 	return board;
 }
+
+
 
 int main(int argc, char *argv[]){
 	nombre();  //verificar
@@ -464,7 +465,7 @@ int main(int argc, char *argv[]){
 	//Crea el tablero
 
 
-	struct caja **tablero = CrearTablero(N);
+	struct caja **tablero = TableroNuevo(N);
 	InitBoxes(tablero);
 	PrintBox(tablero);
 	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
