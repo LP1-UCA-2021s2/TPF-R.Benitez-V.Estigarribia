@@ -56,8 +56,6 @@ int main(int argc, char *argv[]){
 
 
 	/*
-	color();  //hay que modificar
-	N = dim_matriz()-1;  //modificar dim_matriz HACE MAL LAS COMPROBACIONES
 
 	//Inicializa puntajes
 	puntos[0] = 0;
@@ -108,7 +106,7 @@ int main(int argc, char *argv[]){
 	}
 
 	*/
-	gtk_widget_show_all(win_principal);
+	gtk_widget_show_all(win_entrada);
 	gtk_main();
 
 	return 0;

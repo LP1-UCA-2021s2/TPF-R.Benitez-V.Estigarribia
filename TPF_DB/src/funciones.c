@@ -22,7 +22,6 @@ enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas 
 int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio (utilizada por la IA)
 
 
-
 char *imagenes[] = {"./IMG/circ.png","./IMG/blanco.png"};
 
 
@@ -206,6 +205,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 		cajas3p -= 1;  //global
 	}
 
+	puts("\nHEY");
 	return cajasCerradas;
 }
 
@@ -418,7 +418,6 @@ void JuegoNuevo(GtkWidget *widget, gpointer data){
 	gtk_widget_hide(win_entrada);
 }
 
-
 //Pide el nombre del usuario
 void nombre(GtkWidget *widget, gpointer data){
 	//const gchar *nombre = gtk_entry_get_text (GTK_ENTRY(name_entry));
@@ -449,29 +448,70 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 }
 
 
+//para pasar como argumento a g_signal_connect
+struct data {
+	GtkWidget *widget;
+	struct caja **tablero;
+};
 
 
-void tablero_cb(GtkWidget *event_box, GdkEventButton *event, gpointer data){
-	guint i,j;
+void Play(GtkWidget *event_box, GdkEventButton *event, gpointer args){
+	puts("\n\t\tEN PLAY");
+	guint i,j;  //coords tablero grafico
+	int x, y;  //coords tablero logico (struct caja [][])
+
+	struct data *data = args;
+
 	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
 	j = (GUINT_FROM_LE(event->x) / 50);
 
-	if(j%2==1&&i%2==0){
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
-	}else{
-		if(j%2==0&&i%2==1){
-			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+
+	if(i%2==0 && j%2==1)  //Si i es par y j impar  se agrega una pared ARRIBA a la caja en x, y
+	{
+		x = i/2;
+		y = (j-1)/2;
+
+		if(x != 2*N){
+			//AgregarPared(data->tablero, x, y, 0);
+			PrintBox(data->tablero);
+		}else{  //Si esta en el limite del tablero (abajo) x=x-1
+			AgregarPared(data->tablero, x-1, y, 1);
+		}
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(data->widget),j,i)), "IMG/linea.png");
+	}
+	else
+	{
+		if(i%2==1 && j%2==0)//Si j es par y i impar  se agrega una pared IZQ a la caja en x, y
+		{
+			y = j/2;
+			x = (i-1)/2;
+
+			if(y != 2*N){
+				AgregarPared(data->tablero, x, y, 3);
+			}else{  //Si esta en el limite del tablero y=y-1
+				AgregarPared(data->tablero, x, y-1, 2);
+			}
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(data->widget),j,i)), "IMG/lineav.png");
 		}
 	}
 }
 
 
 GtkWidget *CrearTablero(){
+	//Inicializa puntajes
+	puntos[0] = 0;
+	puntos[1] = 0;
+
+	//Creacion de tablero
+	struct caja **tablero = TableroNuevo(N);
+	InitBoxes(tablero);
+
 	int i, j;
 	GtkWidget *imagen; //auxiliar para cargar la imagen
 	GtkWidget *eventbox;
 	eventbox = gtk_event_box_new();
 	grid_tablero = gtk_grid_new();
+
 	for (i = 0; i < N*2+1; i++) {
 		for (j = 0; j < N*2+1; j++) {
 			if(i%2==0&&j%2==0){
@@ -485,11 +525,18 @@ GtkWidget *CrearTablero(){
 
 		}
 	}
+
+	printf("\n\n%d\n", N);
+
+	struct data data;
+	data.widget = grid_tablero;
+	data.tablero = tablero;
+
 	gtk_container_add(GTK_CONTAINER(eventbox), grid_tablero);
-	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(tablero_cb), grid_tablero);
+	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), &data);
+
 	return eventbox;
 }
-
 
 
 void IniciarPartida(GtkWidget *widget, gpointer data){

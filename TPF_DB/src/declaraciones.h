@@ -46,7 +46,7 @@ int cajas3p;  /*Cantidad de cajas que TIENEN 3 paredes cerradas. Si hay alguna c
 
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
 
-void PrintBox(struct caja cajas[][N]);
+void PrintBox(struct caja **cajas);
 void InitBoxes(struct caja cajas[][N]);
 void ActualizarPeso(struct caja caja[][N], int x, int y);
 int AgregarPared(struct caja tablero[][N], int x, int y, int p);
