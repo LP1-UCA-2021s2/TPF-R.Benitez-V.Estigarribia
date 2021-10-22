@@ -64,7 +64,7 @@ struct caja {
 
 
 //Imprime el tablero en el terminal
-void PrintBox(struct caja cajas[][N]){
+void PrintBox(struct caja **cajas){
 	printf("\n");
     for(int i=0; i < N; i++){
         printf("+");
@@ -86,7 +86,7 @@ void PrintBox(struct caja cajas[][N]){
 
 
 //Inicializa y cera las paredes
-void InitBoxes(struct caja cajas[][N]){
+void InitBoxes(struct caja **cajas){
 	/*Todas las cajas inician con todas las paredes y pCerradas en cero
 	 * PERO el peso no es el mismo para todas, las paredes que esten
 	 * en el 'borde' del tablero ya le agregan peso a la caja
@@ -94,6 +94,7 @@ void InitBoxes(struct caja cajas[][N]){
 	 * Por tanto las cajas ubicadas en las esquinas tienen peso inicial 4
 	 * y las que estan en el borde tienen peso inicial 2
 	 */
+
 	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++){
 			cajas[i][j].peso = 0;
@@ -123,7 +124,7 @@ void InitBoxes(struct caja cajas[][N]){
 
 
 //Se actualiza el peso de las cajas adyacentes a caja[x][y]
-void ActualizarPeso(struct caja caja[][N], int x, int y){
+void ActualizarPeso(struct caja **caja, int x, int y){
 	/* Si la caja en (x,y) tiene pCerradas==2 se llama esta funcion
 	 * que a cada caja adyacente le suma un PESO en la pared correspondiente
 	 * (la pared 'pegada' a caja[x][y])
@@ -149,7 +150,7 @@ void ActualizarPeso(struct caja caja[][N], int x, int y){
 
 
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso [0, 1, 2]
-int AgregarPared(struct caja tablero[][N], int x, int y, int p){
+int AgregarPared(struct caja **tablero,int x, int y, int p){
 	/* Agrega una pared p a la caja en tablero[x][y]
 	 *
 	 * Ademas, puede cambiar los valores de:
@@ -245,7 +246,7 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 
 
 //Controla que las paredes no esten cerradas [0, 1]
-int pared_check(struct caja tablero[][N], int x, int y, int p){
+int pared_check(struct caja **tablero, int x, int y, int p){
 	switch(p){
 		case 0:
 			if (tablero[x][y].ARRIBA%2 == CERRADA){
@@ -273,7 +274,7 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 
 
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento
-int mov_usuario(struct caja tablero[][N]){
+int mov_usuario(struct caja **tablero){
 	//Datos a ingresar
     int f = 0;  //fila
     int c = 0;  //columna
@@ -333,7 +334,7 @@ int mov_usuario(struct caja tablero[][N]){
 
 
 //Movimiento de la pc (random o con condiciones extra), retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom){
+int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 	/* Hace un movimiento en una caja random o en la fila y columna indicadas.
 	 *
 	 * Mov random:
@@ -394,7 +395,7 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom){
 
 
 //Movimiento de la pc con IA, retorna la cantidad de cajas cerradas en un movimiento
-int JuegaPC(struct caja tablero[][N]){
+int JuegaPC(struct caja **tablero){
 	/* Hace un movimiento evitando las cajas que ya tengan dos paredes << pCerradas==2 >>
 	 * (ya que al agregarle la tercera le daria ventaja al oponente)
 	 *
@@ -412,7 +413,8 @@ int JuegaPC(struct caja tablero[][N]){
 	columna = ultCoords[1];
 
 	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
-	if( (tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p )
+	//|| cajas2p==N*N) && !cajas3p
+	if( tablero[0][0].pCerradas==0 )
 	{
 		fila = rand()%N;
 		columna = rand()%N;
@@ -428,19 +430,41 @@ int JuegaPC(struct caja tablero[][N]){
 }
 
 
+struct caja **
+CrearTablero(int size){
+	/*
+	* Funcion que crea el tablero dependiendo del tamaño que recibe.
+	* Parametros:
+	* 	size -> tamaño introducido por el usuario.
+	* Retorno:
+	*  La posicion de memoria donde se encuentra el tablero creado.
+	*/
+	struct caja **board;
+	board=malloc(size*sizeof(struct caja));
+	for(int i=0;i<size;i++){
+		board[i]=malloc(size*sizeof(struct caja));
+	}
+
+	return board;
+}
 
 int main(int argc, char *argv[]){
 	nombre();  //verificar
 	int turno = jugador();  //verificar
 	color();  //hay que modificar
-	N = dim_matriz()-1;  //modificar dim_matriz HACE MAL LAS COMPROBACIONES
+	N = dim_matriz()-1;
+
 
 	//Inicializa puntajes
 	puntos[0] = 0;
 	puntos[1] = 0;
 
 	//Creacion de tablero
-	struct caja tablero[N][N];
+
+	//Crea el tablero
+
+
+	struct caja **tablero = CrearTablero(N);
 	InitBoxes(tablero);
 	PrintBox(tablero);
 	printf("\nLa matriz es de: %d x %d \n", N+1, N+1);
