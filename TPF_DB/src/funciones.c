@@ -4,7 +4,7 @@
  Author      : R.Benitez || V.Estigarribia
  Version     :
  Copyright   : Your copyright notice
- Description : Definicion de funciones declaradas en "funciones.h"
+ Description : Definicion de funciones declaradas en "declaraciones.h"
  ============================================================================
  */
 
@@ -213,6 +213,32 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	return cajasCerradas;
 }
 
+void AgregarLinea(int x, int y, int p){
+	int i, j;
+
+	if(p==0 || p==1){
+
+		i = 2*x;
+		if(p==1){
+			i += 2;
+		}
+		j = 2*y + 1;
+
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+	}
+	if(p==2 || p==3){
+
+		j = 2*y;
+		if(p==2){
+			j += 2;
+		}
+		i = 2*x + 1;
+
+		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+	}
+
+}
+
 
 //Controla que las paredes no esten cerradas [0, 1]
 int pared_check(struct caja **tablero, int x, int y, int p){
@@ -242,51 +268,23 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 }
 
 
-//Juega el humano, retorna la cantidad de cajas cerradas en un movimiento
-int mov_usuario(struct caja **tablero){
-	//Datos a ingresar
-    int f = 0;  //fila
-    int c = 0;  //columna
-    int p = 0;  //pared
-
-
-	printf("\nIngrese las coordenadas de la caja [fila, columna]: ");
-	scanf("%d, %d", &f, &c);
-
-	//Comprobacion fila y columna dentro del rango de la matriz NO COMPRUEBA PARA (f,c)<0
-	while( f >= N || c >= N){
-		printf("\nError. Coordenadas fuera de rango. Vuelva a ingresar: ");
-		scanf("%d, %d", &f, &c);
-	}
-	//Si la caja que eligio esta cerrada vuelve a pedir NO COMPRUEBA QUE ESTEN DENTRO DE RANGO
-	while(tablero[f][c].pCerradas == 4){
-		printf("\nLa caja seleccionada esta cerrada. Vuelva a elegir: ");
-		scanf("%d, %d", &f, &c);
-	}
-
+//Juega el humano, retorna la cantidad de cajas cerradas en un movimiento o -1 si no logro realizarse una jugada valida
+int mov_usuario(struct caja **tablero, int i, int j, int p){
 
 	//Pedir pared a cerrar
-	printf("\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: ");
-	bueno:
-		scanf("%d", &p);
-		while(p != 1 && p != 2 && p != 3 && p != 0){	//Rango de pared
-			printf("\nError. Fuera del rango. Vuelva a elegir la pared: ");
-			scanf("%d", &p);
-		}
-		while(pared_check(tablero, f, c, p)==0){		//La pared seleccionada esta cerrada
-			printf("\nError. La pared ya esta cerrada. Vuelva a elegir: ");
-			goto bueno;		//-->Vuelve a controlar si el ingresado esta dentro del rango
-		}
+	if(pared_check(tablero, i, j, p)==0){		//La pared seleccionada esta cerrada
+		return -1;
+	}
 
 
 	//Guardamos la posicion de la caja que acaba de seleccionarse (para la IA hehe)
-	ultCoords[0] = f;
-	ultCoords[1] = c;
+	ultCoords[0] = i;
+	ultCoords[1] = j;
 
 
 	//Se hace el movimiento
 	int cajasCerradas;
-	cajasCerradas = AgregarPared(tablero, f, c, p);
+	cajasCerradas = AgregarPared(tablero, i, j, p);
 
 	//Suma los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
@@ -294,7 +292,6 @@ int mov_usuario(struct caja **tablero){
 		printf("\nHas cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[1]);
 	}
-
 
 
 	return cajasCerradas;
@@ -357,6 +354,8 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
 		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
 	}
+
+	AgregarLinea(fila, columna, pared);
 
 
 	return cajasCerradas;
@@ -429,10 +428,13 @@ void nombre(GtkWidget *widget, gpointer data){
 }
 
 void QuienInicia(GtkWidget *widget, gpointer data){
-	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
-	if(turno == 2){
+	iniciaHumano = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+	if(iniciaHumano == -1){
+		iniciaHumano = 1;
+	}
+	if(iniciaHumano == 2){
 		srand(time(NULL));
-		turno=rand() % 2;
+		iniciaHumano = rand() % 2;
 	}
 }
 
@@ -453,7 +455,6 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 
 
 
-
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	/* Encargado de lo que pasa en la ventana del juego en si.
 	 *
@@ -463,6 +464,10 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	 */
 	guint i,j;  //coords tablero grafico
 	int x, y;  //coords tablero logico (struct caja [][])
+	//jugadaExitosa indica si el usuario pudo hacer un movimiento con exito
+	int jugadaExitosa = -1;  //tiene que inicializarse con -1 para que la PC no haga un mov en caso de que el usuario presione una posicion invalida
+	int repitePC = 0;
+
 
 	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
 	j = (GUINT_FROM_LE(event->x) / 50);
@@ -503,9 +508,9 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		y = (j-1)/2;
 
 		if(x != N){
-			AgregarPared(tablero, x, y, 0);
+			jugadaExitosa = mov_usuario(tablero, x, y, 0);
 		}else{
-			AgregarPared(tablero, x-1, y, 1);
+			jugadaExitosa = mov_usuario(tablero, x-1, y, 1);
 		}
 
 		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
@@ -516,16 +521,45 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		x = (i-1)/2;
 
 		if(y != N){
-			AgregarPared(tablero, x, y, 3);
+			jugadaExitosa = mov_usuario(tablero, x, y, 3);
 		}else{
-			AgregarPared(tablero, x, y-1, 2);
+			jugadaExitosa = mov_usuario(tablero, x, y-1, 2);
 		}
 
 		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
 	}
 
+	printf("\n\nHUMANO: %d\n\n", jugadaExitosa);
+	if(jugadaExitosa == 0)
+	{
+		repitePC = JuegaPC(tablero);
+		cajasAbiertas -= repitePC;
+
+		while(repitePC && cajasAbiertas!=0){
+			repitePC = JuegaPC(tablero);
+			cajasAbiertas -= repitePC;
+		}
+
+	}
+	else if(jugadaExitosa != -1)
+	{
+		cajasAbiertas -= jugadaExitosa;
+	}
+
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
+
+	if(cajasAbiertas==0){
+		//Mensajes fin de juego
+		printf("\n\n 		TERMINO EL JUEGO");
+		if (puntos[0] > puntos[1]){
+			printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
+		}else if(puntos[0] == puntos[1]){
+			printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
+		}else{
+			printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
+		}
+	}
 }
 
 
@@ -570,6 +604,13 @@ GtkWidget *CrearTablero(){
 	InitBoxes(tablero);
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
+
+	cajas2p = cajas3p = 0;
+	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
+
+	if(!iniciaHumano){
+		JuegaPC(tablero);
+	}
 
 
 	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()

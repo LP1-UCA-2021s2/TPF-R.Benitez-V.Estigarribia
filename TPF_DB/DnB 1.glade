@@ -536,9 +536,8 @@
                 <property name="tearoff_title" translatable="yes">Elija el modo de juego</property>
                 <property name="has_entry">True</property>
                 <items>
-                  <item translatable="yes">      </item>
-                  <item id="1" translatable="yes">Humano Vs Pc</item>
-                  <item id="0" translatable="yes">Pc Vs Pc</item>
+                  <item id="0" translatable="yes">Humano Vs Pc</item>
+                  <item id="1" translatable="yes">Pc Vs Pc</item>
                 </items>
                 <child internal-child="entry">
                   <object class="GtkEntry">
@@ -578,10 +577,9 @@
                 <property name="active">2</property>
                 <property name="has_entry">True</property>
                 <items>
-                  <item id="2" translatable="yes">    </item>
                   <item id="0" translatable="yes">PC</item>
                   <item id="1" translatable="yes">Humano</item>
-                  <item id="-1" translatable="yes">Aleatorio</item>
+                  <item id="2" translatable="yes">Aleatorio</item>
                 </items>
                 <child internal-child="entry">
                   <object class="GtkEntry">
@@ -620,7 +618,6 @@
                 <property name="active">0</property>
                 <property name="has_entry">True</property>
                 <items>
-                  <item translatable="yes">   </item>
                   <item id="0" translatable="yes">Rojo</item>
                   <item id="1" translatable="yes">Verde</item>
                 </items>

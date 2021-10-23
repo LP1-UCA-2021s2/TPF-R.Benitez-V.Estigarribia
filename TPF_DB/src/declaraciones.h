@@ -4,7 +4,7 @@
 
 
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
-int turno, color;
+int iniciaHumano, color, cajasAbiertas;
 
 struct caja {
 	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:
@@ -50,8 +50,9 @@ void PrintBox(struct caja **cajas);
 void InitBoxes(struct caja **cajas);
 void ActualizarPeso(struct caja **caja, int x, int y);
 int AgregarPared(struct caja **tablero, int x, int y, int p);
+void AgregarLinea(int x, int y, int p);
 int pared_check(struct caja **tablero, int x, int y, int p);
-int mov_usuario(struct caja **tablero);
+int mov_usuario(struct caja **tablero, int i, int j, int p);
 int mov_pc(struct caja **tablero, int fila, int columna, int absRandom);
 int JuegaPC(struct caja **tablero);
 struct caja **TableroNuevo(int size);

@@ -500,6 +500,7 @@
                 <property name="margin_right">1</property>
                 <property name="margin_top">1</property>
                 <property name="margin_bottom">1</property>
+                <property name="max_length">20</property>
                 <property name="xalign">0.47999998927116394</property>
                 <property name="placeholder_text" translatable="yes">Inserte su nombre</property>
               </object>
@@ -535,9 +536,8 @@
                 <property name="tearoff_title" translatable="yes">Elija el modo de juego</property>
                 <property name="has_entry">True</property>
                 <items>
-                  <item translatable="yes">      </item>
-                  <item id="1" translatable="yes">Humano Vs Pc</item>
-                  <item id="0" translatable="yes">Pc Vs Pc</item>
+                  <item id="0" translatable="yes">Humano Vs Pc</item>
+                  <item id="1" translatable="yes">Pc Vs Pc</item>
                 </items>
                 <child internal-child="entry">
                   <object class="GtkEntry">
@@ -577,10 +577,9 @@
                 <property name="active">2</property>
                 <property name="has_entry">True</property>
                 <items>
-                  <item id="2" translatable="yes">    </item>
                   <item id="0" translatable="yes">PC</item>
                   <item id="1" translatable="yes">Humano</item>
-                  <item id="-1" translatable="yes">Aleatorio</item>
+                  <item id="2" translatable="yes">Aleatorio</item>
                 </items>
                 <child internal-child="entry">
                   <object class="GtkEntry">
@@ -657,6 +656,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
+                <property name="placeholder_text" translatable="yes">Numero entre 3 y 15</property>
                 <property name="input_purpose">number</property>
               </object>
               <packing>
