@@ -216,17 +216,21 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 void AgregarLinea(int x, int y, int p){
 	int i, j;
 
-	if(p==0 || p==1){
+	if(p==0 || p==1){  //Linea horizontal
 
 		i = 2*x;
 		if(p==1){
 			i += 2;
 		}
 		j = 2*y + 1;
+		if(color == 0){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+		}
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
 	}
-	if(p==2 || p==3){
+	if(p==2 || p==3){  //Linea vertical
 
 		j = 2*y;
 		if(p==2){
@@ -234,7 +238,11 @@ void AgregarLinea(int x, int y, int p){
 		}
 		i = 2*x + 1;
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+		if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+			}
 	}
 
 }
@@ -440,6 +448,9 @@ void QuienInicia(GtkWidget *widget, gpointer data){
 
 void Color(GtkWidget *widget, gpointer data){
 	color = gtk_combo_box_get_active(GTK_COMBO_BOX(colour));
+	if(color == -1){
+		color = 0;  //rojo default
+	}
 }
 
 //Dimension de la matriz, default = 3
@@ -513,7 +524,14 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 			jugadaExitosa = mov_usuario(tablero, x-1, y, 1);
 		}
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+		if(jugadaExitosa != -1){
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+			}
+		}
+
 	}
 	else if(LINEA_VERTICAL)
 	{
@@ -525,8 +543,13 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		}else{
 			jugadaExitosa = mov_usuario(tablero, x, y-1, 2);
 		}
-
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+		if(jugadaExitosa != -1){
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
+			}
+		}
 	}
 
 	printf("\n\nHUMANO: %d\n\n", jugadaExitosa);
