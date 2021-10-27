@@ -553,6 +553,20 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	}
 
 	printf("\n\nHUMANO: %d\n\n", jugadaExitosa);
+
+	//Crea la ventana emergente que contiene la advertencia
+	if (jugadaExitosa==-1){
+		GtkWidget *dialog;
+		dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
+					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_MESSAGE_WARNING,
+					GTK_BUTTONS_OK,
+					"Movimiento invalido. Vuelva a intentarlo");
+		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+	}
+
 	if(jugadaExitosa == 0)
 	{
 		repitePC = JuegaPC(tablero);
@@ -571,18 +585,51 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
+	GtkWidget *dialog;
+
 
 	if(cajasAbiertas==0){
 		//Mensajes fin de juego
 		printf("\n\n 		TERMINO EL JUEGO");
 		if (puntos[0] > puntos[1]){
-			printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
+			          GTK_DIALOG_DESTROY_WITH_PARENT,
+					  GTK_MESSAGE_INFO,
+					  GTK_BUTTONS_OK,
+					  "		HAS PERDIDO "
+					  "\nTus puntos: %d  ||  PC: %d. Vuelva a intentar ", puntos[1], puntos[0]);
+			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(dialog);
+
+			printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(. Vuelva a intentar ", puntos[1], puntos[0]);
 		}else if(puntos[0] == puntos[1]){
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
+					 	 GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_INFO,
+						 GTK_BUTTONS_OK,
+						 "		EMPATE"
+						 "\nTus puntos: %d    ||    PC: %d\n", puntos[1], puntos[0]);
+			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(dialog);
+
 			printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
 		}else{
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
+						 GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_INFO,
+						 GTK_BUTTONS_OK,
+						 "		Ha ganadooo :)"
+						 "\nTus puntos: %d  ||	PC: %d", puntos[1], puntos[0]);
+			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(dialog);
+
 			printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
 		}
 	}
+
 }
 
 

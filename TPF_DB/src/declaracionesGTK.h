@@ -19,6 +19,8 @@ GtkWidget *grid_tablero;
 GtkWidget *win_entrada;
 GtkWidget *win_principal;
 GtkWidget *win_juego;
+GtkWidget *win_warning;
+GtkWidget *win_info;
 
 /*BOTONES*/
 GtkWidget *btn_newgame;
