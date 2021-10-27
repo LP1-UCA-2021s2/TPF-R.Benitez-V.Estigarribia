@@ -117,7 +117,27 @@ void ActualizarPeso(struct caja **caja, int x, int y){
 }
 
 
+void PintarCaja(int x, int y){
+	int i = 2*x + 1;
+	int j = 2*y + 1;
 
+	if(color==0)
+	{
+		if(turno == 1){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/rojo.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/verde.png");
+		}
+	}
+	else
+	{
+		if(turno == 1){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/verde.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/rojo.png");
+		}
+	}
+}
 
 
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso [0, 1, 2]
@@ -210,6 +230,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;  //local
 		cajas3p -= 1;  //global
+		PintarCaja(x, y);
 	}
 
 
@@ -281,6 +302,8 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento o -1 si no logro realizarse una jugada valida
 int mov_usuario(struct caja **tablero, int i, int j, int p){
+
+	turno = 1;
 
 	//Pedir pared a cerrar
 	if(pared_check(tablero, i, j, p)==0){		//La pared seleccionada esta cerrada
@@ -386,6 +409,8 @@ int JuegaPC(struct caja **tablero){
 	 * 		cajasCerradas: cantidad de cajas cerradas en una jugada
 	 */
 
+	turno = 0;
+
 	srand(time(NULL));
 	int fila, columna, cajasCerradas;
 	fila = ultCoords[0];
@@ -476,13 +501,13 @@ void nombre(GtkWidget *widget, gpointer data){
 }
 
 void QuienInicia(GtkWidget *widget, gpointer data){
-	iniciaHumano = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
-	if(iniciaHumano == -1){
-		iniciaHumano = 1;
+	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+	if(turno == -1){
+		turno = 1;
 	}
-	if(iniciaHumano == 2){
+	if(turno == 2){
 		srand(time(NULL));
-		iniciaHumano = rand() % 2;
+		turno = rand() % 2;
 	}
 }
 
@@ -707,7 +732,7 @@ GtkWidget *CrearTablero(){
 	cajas2p = cajas3p = 0;
 	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 
-	if(!iniciaHumano){
+	if(!turno){
 		JuegaPC(tablero);
 	}
 
