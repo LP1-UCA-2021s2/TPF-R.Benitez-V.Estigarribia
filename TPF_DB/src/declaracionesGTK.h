@@ -20,7 +20,9 @@ GtkWidget *win_entrada;
 GtkWidget *win_principal;
 GtkWidget *win_juego;
 GtkWidget *win_warning;
-GtkWidget *win_info;
+GtkWidget *win_salir;
+GtkWidget *win_yes_no;
+GtkWidget *win_fin;
 
 /*BOTONES*/
 GtkWidget *btn_newgame;
@@ -29,6 +31,7 @@ GtkWidget *btn_help;
 GtkWidget *btn_credits;
 GtkWidget *btn_exit;
 GtkWidget *btn_iniciar;
+GtkWidget *btn_atras;
 
 
 /*COMBO_BOXES - ENTRIES*/
@@ -46,6 +49,8 @@ void QuienInicia(GtkWidget *widget, gpointer data);
 void Color(GtkWidget *widget, gpointer data);
 void DimMatriz(GtkWidget *widget, gpointer data);
 void IniciarPartida(GtkWidget *widget, gpointer data);
+void VolverAInicio(GtkWidget *widget, gpointer data);
+void Salir(GtkWidget *widget, gpointer data);
 GtkWidget *CrearTablero();
 
 #endif /* DECLARACIONESGTK_H_ */

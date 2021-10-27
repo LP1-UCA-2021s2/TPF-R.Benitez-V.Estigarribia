@@ -117,6 +117,9 @@ void ActualizarPeso(struct caja **caja, int x, int y){
 }
 
 
+
+
+
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso [0, 1, 2]
 int AgregarPared(struct caja **tablero,int x, int y, int p){
 	/* Agrega una pared p a la caja en tablero[x][y]
@@ -424,6 +427,43 @@ TableroNuevo(int size){
 }
 
 
+void Salir(GtkWidget *widget, gpointer data){
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_salir),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro de quiere salir del juego?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_entrada);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
+
+void VolverAInicio(GtkWidget *widget, gpointer data){
+
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_yes_no),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro de quiere volver?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_entrada);
+		gtk_widget_hide(win_principal);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
 void JuegoNuevo(GtkWidget *widget, gpointer data){
 	gtk_widget_show_all(win_principal);
 	gtk_widget_hide(win_entrada);
@@ -458,12 +498,31 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 	const gchar *dimension = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
 	int dim = atoi(dimension);
 	if(dim < 3 || dim > 15){
-		N = 3;
+		N = 2;
 	}else{
 		N = dim-1;
 	}
 }
 
+
+void FinJuego(char *message) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_fin),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+			message, puntos[1], puntos[0]);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Fin del juego");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_principal);
+		gtk_widget_hide(win_juego);
+	}else{
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_juego);
+	}
+}
 
 
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
@@ -585,49 +644,19 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
-	GtkWidget *dialog;
 
 
 	if(cajasAbiertas==0){
 		//Mensajes fin de juego
 		printf("\n\n 		TERMINO EL JUEGO");
 		if (puntos[0] > puntos[1]){
-			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
-			          GTK_DIALOG_DESTROY_WITH_PARENT,
-					  GTK_MESSAGE_INFO,
-					  GTK_BUTTONS_OK,
-					  "		HAS PERDIDO "
-					  "\nTus puntos: %d  ||  PC: %d. Vuelva a intentar ", puntos[1], puntos[0]);
-			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
-			gtk_dialog_run(GTK_DIALOG(dialog));
-			gtk_widget_destroy(dialog);
-
-			printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(. Vuelva a intentar ", puntos[1], puntos[0]);
+			FinJuego("\nHa perdido con %d puntos contra %d puntos de la computadora.\nDesea volver a jugar?");
 		}else if(puntos[0] == puntos[1]){
-			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
-					 	 GTK_DIALOG_DESTROY_WITH_PARENT,
-						 GTK_MESSAGE_INFO,
-						 GTK_BUTTONS_OK,
-						 "		EMPATE"
-						 "\nTus puntos: %d    ||    PC: %d\n", puntos[1], puntos[0]);
-			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
-			gtk_dialog_run(GTK_DIALOG(dialog));
-			gtk_widget_destroy(dialog);
-
-			printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
+			FinJuego("\nEmpate. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}else{
-			dialog = gtk_message_dialog_new(GTK_WINDOW(win_info),
-						 GTK_DIALOG_DESTROY_WITH_PARENT,
-						 GTK_MESSAGE_INFO,
-						 GTK_BUTTONS_OK,
-						 "		Ha ganadooo :)"
-						 "\nTus puntos: %d  ||	PC: %d", puntos[1], puntos[0]);
-			gtk_window_set_title(GTK_WINDOW(dialog), "Information");
-			gtk_dialog_run(GTK_DIALOG(dialog));
-			gtk_widget_destroy(dialog);
-
-			printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
+			FinJuego("\nGanaste. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}
+		gtk_widget_destroy(grid_tablero);
 	}
 
 }

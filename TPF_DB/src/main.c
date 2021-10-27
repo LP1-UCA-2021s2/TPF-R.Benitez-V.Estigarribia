@@ -39,6 +39,12 @@ int main(int argc, char *argv[]){
 	btn_iniciar = GTK_WIDGET(gtk_builder_get_object(builder,"btn_iniciar"));
 	g_signal_connect(btn_iniciar,"clicked", G_CALLBACK(IniciarPartida),NULL);
 
+	btn_atras = GTK_WIDGET(gtk_builder_get_object(builder,"btn_atras"));
+	g_signal_connect(btn_atras,"clicked", G_CALLBACK(VolverAInicio),NULL);
+
+	btn_exit = GTK_WIDGET(gtk_builder_get_object(builder,"btn_exi"));
+	g_signal_connect(btn_exit,"clicked", G_CALLBACK(Salir),NULL);
+
 
 	//name_entry = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador"));
 	//g_signal_connect(name_entry,"activate", G_CALLBACK(nombre),NULL);
