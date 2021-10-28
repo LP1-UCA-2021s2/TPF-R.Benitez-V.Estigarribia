@@ -32,7 +32,10 @@ GtkWidget *btn_credits;
 GtkWidget *btn_exit;
 GtkWidget *btn_iniciar;
 GtkWidget *btn_atras;
-
+GObject *dialogAcerca;
+GObject *dialogAyuda;
+GObject *menu_mostrar_acerca;
+GObject *menu_mostrar_ayuda;
 
 /*COMBO_BOXES - ENTRIES*/
 GtkWidget *name_entry;
@@ -51,6 +54,8 @@ void DimMatriz(GtkWidget *widget, gpointer data);
 void IniciarPartida(GtkWidget *widget, gpointer data);
 void VolverAInicio(GtkWidget *widget, gpointer data);
 void Salir(GtkWidget *widget, gpointer data);
+void mostrar_acerca(GtkWidget *widget, gpointer data);
+void mostrar_ayuda(GtkWidget *widget, gpointer data);
 GtkWidget *CrearTablero();
 
 #endif /* DECLARACIONESGTK_H_ */

@@ -80,21 +80,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="btn_credit">
-                <property name="label" translatable="yes">Creditos</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">center</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">9</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="btn_exi">
                 <property name="label" translatable="yes">Salir del juego</property>
                 <property name="visible">True</property>
@@ -264,19 +249,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_error">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Errores</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Serif 13"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -335,6 +308,45 @@
             <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAboutDialog" id="win_acercad">
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">win_juego</property>
+    <property name="program_name">Dots and Boxes</property>
+    <property name="version">1.0002</property>
+    <property name="copyright" translatable="yes">Todos los derechos reservados</property>
+    <property name="website">https://github.com/LP1-UCA-2021s2/TPF-R.Benitez-V.Estigarribia</property>
+    <property name="website_label" translatable="yes">Repositorio del juego</property>
+    <property name="license" translatable="yes">De libre distribución y uso.</property>
+    <property name="authors">Rosana Benitez y Victor Estigarribia</property>
+    <property name="logo_icon_name">applications-games</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="box_a1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -736,6 +748,40 @@
             <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkDialog" id="win_ve">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="box_ver1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>

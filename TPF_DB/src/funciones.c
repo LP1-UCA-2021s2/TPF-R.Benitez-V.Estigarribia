@@ -742,6 +742,15 @@ GtkWidget *CrearTablero(){
 	return eventbox;
 }
 
+void mostrar_acerca(GtkWidget *widget, gpointer data) {
+	gtk_dialog_run(GTK_DIALOG(dialogAcerca) );// mostramos la ventana de diálogo
+	gtk_widget_hide(GTK_WIDGET(dialogAcerca) );	// escondemos la ventana
+}
+
+void mostrar_ayuda(GtkWidget *widget, gpointer data) {
+	gtk_dialog_run(GTK_DIALOG(dialogAyuda) );// mostramos la ventana de diálogo
+	gtk_widget_hide(GTK_WIDGET(dialogAyuda) );	// escondemos la ventana
+}
 
 //Muestra la pantalla de juego
 void IniciarPartida(GtkWidget *widget, gpointer data){

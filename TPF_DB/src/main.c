@@ -45,6 +45,14 @@ int main(int argc, char *argv[]){
 	btn_exit = GTK_WIDGET(gtk_builder_get_object(builder,"btn_exi"));
 	g_signal_connect(btn_exit,"clicked", G_CALLBACK(Salir),NULL);
 
+	dialogAcerca = gtk_builder_get_object(builder, "win_acercad");
+	menu_mostrar_acerca = gtk_builder_get_object(builder, "imagemenuitem10");
+	g_signal_connect(menu_mostrar_acerca, "activate", G_CALLBACK (mostrar_acerca), NULL);
+
+	dialogAyuda = gtk_builder_get_object(builder, "win_ver");
+	menu_mostrar_ayuda = gtk_builder_get_object(builder, "ver_itm");
+	g_signal_connect(menu_mostrar_ayuda, "activate", G_CALLBACK (mostrar_ayuda), NULL);
+
 
 	//name_entry = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador"));
 	//g_signal_connect(name_entry,"activate", G_CALLBACK(nombre),NULL);
