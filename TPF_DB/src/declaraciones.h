@@ -4,7 +4,8 @@
 
 
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
-int iniciaHumano, color, cajasAbiertas;
+int turno, color, cajasAbiertas;
+
 
 struct caja {
 	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:

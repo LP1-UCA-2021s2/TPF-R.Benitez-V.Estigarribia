@@ -80,21 +80,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="btn_credit">
-                <property name="label" translatable="yes">Creditos</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">center</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">9</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="btn_exi">
                 <property name="label" translatable="yes">Salir del juego</property>
                 <property name="visible">True</property>
@@ -264,19 +249,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="lbl_error">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Errores</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Serif 13"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -291,10 +264,10 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="lbl_turno">
+                  <object class="GtkLabel" id="lbl_na">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Turno</property>
+                    <property name="label" translatable="yes">Usuario</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif 13"/>
                     </attributes>
@@ -312,7 +285,7 @@
                   <object class="GtkLabel" id="lbl_estado">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Estado</property>
+                    <property name="label" translatable="yes">Puntos</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif 13"/>
                     </attributes>
@@ -335,6 +308,45 @@
             <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAboutDialog" id="win_acercad">
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">win_juego</property>
+    <property name="program_name">Dots and Boxes</property>
+    <property name="version">1.0002</property>
+    <property name="copyright" translatable="yes">Todos los derechos reservados</property>
+    <property name="website">https://github.com/LP1-UCA-2021s2/TPF-R.Benitez-V.Estigarribia</property>
+    <property name="website_label" translatable="yes">Repositorio del juego</property>
+    <property name="license" translatable="yes">De libre distribución y uso.</property>
+    <property name="authors">Rosana Benitez y Victor Estigarribia</property>
+    <property name="logo_icon_name">applications-games</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="box_a1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -502,7 +514,8 @@
                 <property name="margin_bottom">1</property>
                 <property name="max_length">20</property>
                 <property name="xalign">0.47999998927116394</property>
-                <property name="placeholder_text" translatable="yes">Inserte su nombre</property>
+                <property name="placeholder_text" translatable="yes">Nombre (luego ENTER)</property>
+                <property name="input_purpose">name</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -535,6 +548,7 @@
                 <property name="active">0</property>
                 <property name="tearoff_title" translatable="yes">Elija el modo de juego</property>
                 <property name="has_entry">True</property>
+                <property name="active_id">1</property>
                 <items>
                   <item id="0" translatable="yes">Humano Vs Pc</item>
                   <item id="1" translatable="yes">Pc Vs Pc</item>
@@ -542,7 +556,7 @@
                 <child internal-child="entry">
                   <object class="GtkEntry">
                     <property name="can_focus">False</property>
-                    <property name="text" translatable="yes">      </property>
+                    <property name="placeholder_text" translatable="yes">Humano vs PC</property>
                   </object>
                 </child>
               </object>
@@ -574,8 +588,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
-                <property name="active">2</property>
+                <property name="active">0</property>
                 <property name="has_entry">True</property>
+                <property name="active_id">1</property>
                 <items>
                   <item id="0" translatable="yes">PC</item>
                   <item id="1" translatable="yes">Humano</item>
@@ -584,7 +599,7 @@
                 <child internal-child="entry">
                   <object class="GtkEntry">
                     <property name="can_focus">False</property>
-                    <property name="text" translatable="yes">    </property>
+                    <property name="placeholder_text" translatable="yes">PC</property>
                   </object>
                 </child>
               </object>
@@ -598,7 +613,7 @@
               <object class="GtkLabel" id="lbl_color">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Color del jugador inicial:</property>
+                <property name="label" translatable="yes">Eliga su color:</property>
                 <attributes>
                   <attribute name="font-desc" value="Serif Bold 14"/>
                 </attributes>
@@ -620,11 +635,12 @@
                 <items>
                   <item id="0" translatable="yes">Rojo</item>
                   <item id="1" translatable="yes">Verde</item>
+                  <item id="2" translatable="yes">Aleatorio</item>
                 </items>
                 <child internal-child="entry">
                   <object class="GtkEntry">
                     <property name="can_focus">False</property>
-                    <property name="text" translatable="yes">   </property>
+                    <property name="placeholder_text" translatable="yes">Rojo</property>
                   </object>
                 </child>
               </object>
@@ -655,7 +671,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
-                <property name="placeholder_text" translatable="yes">Numero entre 3 y 15</property>
+                <property name="placeholder_text" translatable="yes">2&lt;N&lt;16  (default 3)</property>
                 <property name="input_purpose">number</property>
               </object>
               <packing>
@@ -734,300 +750,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">3</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="win_ver">
-    <property name="can_focus">False</property>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkBox" id="box_v1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child>
-          <object class="GtkMenuBar" id="menubar2">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkMenuItem" id="arch_itm1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Archivo</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem6">
-                        <property name="label">gtk-new</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem7">
-                        <property name="label">gtk-open</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem8">
-                        <property name="label">gtk-save</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem9">
-                        <property name="label">gtk-save-as</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem11">
-                        <property name="label">gtk-quit</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="ver_itm1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Ver</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="ayuda_itm1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Ayuda</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu4">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem12">
-                        <property name="label">gtk-about</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="lbl_descrp">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">center</property>
-            <property name="label" translatable="yes">• Descripcion:</property>
-            <property name="justify">right</property>
-            <attributes>
-              <attribute name="font-desc" value="Serif Bold 14"/>
-              <attribute name="underline" value="True"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="padding">46</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">El juego comienza con una cuadrícula vacía de puntos. La  </property>
-            <property name="justify">center</property>
-            <property name="selectable">True</property>
-            <property name="track_visited_links">False</property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="padding">1</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 2">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">cuadrícula puede ser de cualquier tamaño. Los jugadores se  </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 3">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">turnan para conectar 2 puntos adyacentes horizontal, vertical o </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 4">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">diagonalmente separados. Un jugador que completa el cuarto </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 5">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">lado de un cuadro 1x1 gana 10 puntos y debe tomar otro turno. </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">6</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 6">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">El juego termina cuando se dibujan todas las líneas y se reclaman </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="decp 7">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">las casillas. El jugador con más puntos gana. Si más de un </property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">8</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="descp 8">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">jugador tiene la misma puntuación alta, el juego es un empate.</property>
-            <attributes>
-              <attribute name="font-desc" value="Serif 13"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">9</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <object class="GtkBox" id="box_v2">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkButton" id="btn_atra">
-                <property name="label">gtk-go-back</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">9</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">11</property>
           </packing>
         </child>
       </object>

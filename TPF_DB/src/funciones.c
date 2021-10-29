@@ -117,6 +117,29 @@ void ActualizarPeso(struct caja **caja, int x, int y){
 }
 
 
+void PintarCaja(int x, int y){
+	int i = 2*x + 1;
+	int j = 2*y + 1;
+
+	if(color==0)
+	{
+		if(turno == 1){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/rojo.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/verde.png");
+		}
+	}
+	else
+	{
+		if(turno == 1){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/verde.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/rojo.png");
+		}
+	}
+}
+
+
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso [0, 1, 2]
 int AgregarPared(struct caja **tablero,int x, int y, int p){
 	/* Agrega una pared p a la caja en tablero[x][y]
@@ -207,6 +230,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;  //local
 		cajas3p -= 1;  //global
+		PintarCaja(x, y);
 	}
 
 
@@ -216,17 +240,21 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 void AgregarLinea(int x, int y, int p){
 	int i, j;
 
-	if(p==0 || p==1){
+	if(p==0 || p==1){  //Linea horizontal
 
 		i = 2*x;
 		if(p==1){
 			i += 2;
 		}
 		j = 2*y + 1;
+		if(color == 0){
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+		}else{
+			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+		}
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
 	}
-	if(p==2 || p==3){
+	if(p==2 || p==3){  //Linea vertical
 
 		j = 2*y;
 		if(p==2){
@@ -234,7 +262,11 @@ void AgregarLinea(int x, int y, int p){
 		}
 		i = 2*x + 1;
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+		if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+			}
 	}
 
 }
@@ -270,6 +302,8 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento o -1 si no logro realizarse una jugada valida
 int mov_usuario(struct caja **tablero, int i, int j, int p){
+
+	turno = 1;
 
 	//Pedir pared a cerrar
 	if(pared_check(tablero, i, j, p)==0){		//La pared seleccionada esta cerrada
@@ -375,6 +409,8 @@ int JuegaPC(struct caja **tablero){
 	 * 		cajasCerradas: cantidad de cajas cerradas en una jugada
 	 */
 
+	turno = 0;
+
 	srand(time(NULL));
 	int fila, columna, cajasCerradas;
 	fila = ultCoords[0];
@@ -416,30 +452,80 @@ TableroNuevo(int size){
 }
 
 
+void Salir(GtkWidget *widget, gpointer data){
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_salir),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro de quiere salir del juego?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_entrada);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
+
+void VolverAInicio(GtkWidget *widget, gpointer data){
+
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_yes_no),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro de quiere volver?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_entrada);
+		gtk_widget_hide(win_principal);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
 void JuegoNuevo(GtkWidget *widget, gpointer data){
+	N = 0;  //para saber si el usuario ingreso o no el tamanho del tablero
 	gtk_widget_show_all(win_principal);
 	gtk_widget_hide(win_entrada);
 }
 
 //Pide el nombre del usuario
 void nombre(GtkWidget *widget, gpointer data){
-	//const gchar *nombre = gtk_entry_get_text (GTK_ENTRY(name_entry));
-	//luego poner el nombre en algun label o algo
+	const gchar *nombre = gtk_entry_get_text (GTK_ENTRY(name_entry));
+
+	printf("%s", nombre);
+
+	char nombre_txt[20];
+	sprintf(nombre_txt, "%s", nombre);
+	gtk_label_set_label(GTK_LABEL(lbl_name), nombre_txt);
 }
 
 void QuienInicia(GtkWidget *widget, gpointer data){
-	iniciaHumano = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
-	if(iniciaHumano == -1){
-		iniciaHumano = 1;
+	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+	if(turno == -1){
+		turno = 1;
 	}
-	if(iniciaHumano == 2){
+	if(turno == 2){
 		srand(time(NULL));
-		iniciaHumano = rand() % 2;
+		turno = rand() % 2;
 	}
 }
 
 void Color(GtkWidget *widget, gpointer data){
 	color = gtk_combo_box_get_active(GTK_COMBO_BOX(colour));
+	if(color == -1){
+		color = 0;  //rojo default
+	}
+	if(color == 2){
+		srand(time(NULL));
+		color = rand() % 2;
+	}
 }
 
 //Dimension de la matriz, default = 3
@@ -447,12 +533,31 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 	const gchar *dimension = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
 	int dim = atoi(dimension);
 	if(dim < 3 || dim > 15){
-		N = 3;
+		N = 2;
 	}else{
 		N = dim-1;
 	}
 }
 
+
+void FinJuego(char *message) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_fin),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+			message, puntos[1], puntos[0]);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Fin del juego");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_principal);
+		gtk_widget_hide(win_juego);
+	}else{
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_juego);
+	}
+}
 
 
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
@@ -467,6 +572,8 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	//jugadaExitosa indica si el usuario pudo hacer un movimiento con exito
 	int jugadaExitosa = -1;  //tiene que inicializarse con -1 para que la PC no haga un mov en caso de que el usuario presione una posicion invalida
 	int repitePC = 0;
+
+	char puntos_txt[40];
 
 
 	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
@@ -513,7 +620,14 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 			jugadaExitosa = mov_usuario(tablero, x-1, y, 1);
 		}
 
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+		if(jugadaExitosa != -1){
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+			}
+		}
+
 	}
 	else if(LINEA_VERTICAL)
 	{
@@ -525,19 +639,44 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		}else{
 			jugadaExitosa = mov_usuario(tablero, x, y-1, 2);
 		}
-
-		gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+		if(jugadaExitosa != -1){
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
+			}
+		}
 	}
 
 	printf("\n\nHUMANO: %d\n\n", jugadaExitosa);
+
+
+	//Crea la ventana emergente que contiene la advertencia
+	if (jugadaExitosa==-1){
+		GtkWidget *dialog;
+		dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
+					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_MESSAGE_WARNING,
+					GTK_BUTTONS_OK,
+					"Movimiento invalido. Vuelva a intentarlo");
+		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+	}
+
+	sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
+	gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
 	if(jugadaExitosa == 0)
 	{
 		repitePC = JuegaPC(tablero);
 		cajasAbiertas -= repitePC;
-
+		sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
+		gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
 		while(repitePC && cajasAbiertas!=0){
 			repitePC = JuegaPC(tablero);
 			cajasAbiertas -= repitePC;
+			sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
+			gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
 		}
 
 	}
@@ -549,17 +688,22 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
 
+
 	if(cajasAbiertas==0){
+		free(tablero);
+		gtk_label_set_label(GTK_LABEL(lbl_puntos), "Puntos");
 		//Mensajes fin de juego
 		printf("\n\n 		TERMINO EL JUEGO");
 		if (puntos[0] > puntos[1]){
-			printf("\nHa perdido con %d puntos contra %d puntos de la computadora :(, vuelva a intentar ", puntos[1], puntos[0]);
+			FinJuego("\nHa perdido con %d puntos contra %d puntos de la computadora.\nDesea volver a jugar?");
 		}else if(puntos[0] == puntos[1]){
-			printf("\nEMPATEEE         Tus puntos:%d        PC:%d\n", puntos[1], puntos[0]);
+			FinJuego("\nEmpate. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}else{
-			printf("\nHa ganadooo :)  Tus puntos:%d        PC:%d", puntos[1], puntos[0]);
+			FinJuego("\nGanaste. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}
+		gtk_widget_destroy(grid_tablero);
 	}
+
 }
 
 
@@ -608,7 +752,7 @@ GtkWidget *CrearTablero(){
 	cajas2p = cajas3p = 0;
 	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 
-	if(!iniciaHumano){
+	if(!turno){
 		JuegaPC(tablero);
 	}
 
@@ -618,9 +762,34 @@ GtkWidget *CrearTablero(){
 	return eventbox;
 }
 
+void mostrar_acerca(GtkWidget *widget, gpointer data) {
+	gtk_dialog_run(GTK_DIALOG(dialogAcerca) );// mostramos la ventana de diálogo
+	gtk_widget_hide(GTK_WIDGET(dialogAcerca) );	// escondemos la ventana
+}
+
+void mostrar_ayuda(GtkWidget *widget, gpointer data) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new (GTK_WINDOW(win_entrada),
+			GTK_DIALOG_MODAL,
+			GTK_MESSAGE_INFO,
+			GTK_BUTTONS_OK,
+			"Descripción\n"
+			"El juego comienza con una cuadrícula vacía de puntos. La cuadrícula puede ser de cualquier tamaño."
+			"Los jugadores se turnan para conectar 2 puntos adyacentes horizontal, vertical o diagonalmente separados."
+			"Un jugador que completa el cuarto lado de un cuadro 1x1 gana 10 puntos y debe tomar otro turno."
+			"El juego termina cuando se dibujan todas las líneas y se reclaman las casillas."
+			"El jugador con más puntos gana. Si más de un jugador tiene la misma puntuación alta, el juego es un empate.");
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+		gtk_widget_destroy(dialog);
+	}
+}
 
 //Muestra la pantalla de juego
 void IniciarPartida(GtkWidget *widget, gpointer data){
+	if(N==0){  //si no se ingreso el tamanho, se comienza con un tablero de 3x3 (N=2)
+		N = 2;
+	}
+
 	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero_j"));
 	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(), TRUE, FALSE, 20);  //crea el box del tablero
 
