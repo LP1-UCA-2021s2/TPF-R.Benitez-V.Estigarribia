@@ -33,9 +33,10 @@ GtkWidget *btn_exit;
 GtkWidget *btn_iniciar;
 GtkWidget *btn_atras;
 GObject *dialogAcerca;
-GObject *dialogAyuda;
 GObject *menu_mostrar_acerca;
+GObject *menu_mostrar_acerca2;
 GObject *menu_mostrar_ayuda;
+GObject *menu_mostrar_ayuda2;
 
 /*COMBO_BOXES - ENTRIES*/
 GtkWidget *name_entry;
@@ -44,6 +45,9 @@ GtkWidget *quien_inicia;
 GtkWidget *colour;
 GtkWidget *matrix_dim;
 
+/*LABELS*/
+GtkWidget *lbl_puntos;
+GtkWidget *lbl_name;
 
 /*FUNCIONES*/
 void JuegoNuevo(GtkWidget *widget, gpointer data);

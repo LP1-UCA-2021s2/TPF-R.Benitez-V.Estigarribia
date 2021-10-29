@@ -11,6 +11,8 @@
 
 int main(int argc, char *argv[]){
 
+	//se hace el mapeo de lo que esta en el glade
+
 	GError *error=NULL;
 	gtk_init(&argc,&argv);
 	builder=gtk_builder_new();
@@ -20,6 +22,7 @@ int main(int argc, char *argv[]){
 		g_print("Error en la funcion gtk_builder_add_from_file: \n");
 		return 1;
 	}
+
 
 	/*VENTANAS*/
 	win_entrada = GTK_WIDGET(gtk_builder_get_object(builder,"win_entrada"));
@@ -45,17 +48,26 @@ int main(int argc, char *argv[]){
 	btn_exit = GTK_WIDGET(gtk_builder_get_object(builder,"btn_exi"));
 	g_signal_connect(btn_exit,"clicked", G_CALLBACK(Salir),NULL);
 
+
 	dialogAcerca = gtk_builder_get_object(builder, "win_acercad");
+
 	menu_mostrar_acerca = gtk_builder_get_object(builder, "imagemenuitem10");
 	g_signal_connect(menu_mostrar_acerca, "activate", G_CALLBACK (mostrar_acerca), NULL);
 
-	dialogAyuda = gtk_builder_get_object(builder, "win_ver");
+	menu_mostrar_acerca2 = gtk_builder_get_object(builder, "imagemenuitem18");
+	g_signal_connect(menu_mostrar_acerca2, "activate", G_CALLBACK (mostrar_acerca), NULL);
+
+
 	menu_mostrar_ayuda = gtk_builder_get_object(builder, "ver_itm");
 	g_signal_connect(menu_mostrar_ayuda, "activate", G_CALLBACK (mostrar_ayuda), NULL);
 
+	menu_mostrar_ayuda2 = gtk_builder_get_object(builder, "ver_itm2");
+	g_signal_connect(menu_mostrar_ayuda2, "activate", G_CALLBACK (mostrar_ayuda), NULL);
 
-	//name_entry = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador"));
-	//g_signal_connect(name_entry,"activate", G_CALLBACK(nombre),NULL);
+
+
+	name_entry = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador"));
+	g_signal_connect(name_entry,"activate", G_CALLBACK(nombre),NULL);
 
 	matrix_dim = GTK_WIDGET(gtk_builder_get_object(builder,"txt_m"));
 	g_signal_connect(matrix_dim,"activate", G_CALLBACK(DimMatriz),NULL);
@@ -66,6 +78,10 @@ int main(int argc, char *argv[]){
 
 	colour = GTK_WIDGET(gtk_builder_get_object(builder,"cb_color"));
 	g_signal_connect(colour,"changed", G_CALLBACK(Color),NULL);
+
+	/*LABELS*/
+	lbl_puntos = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_estado"));
+	lbl_name = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_na"));
 
 
 	gtk_widget_show_all(win_entrada);
