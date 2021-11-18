@@ -60,6 +60,8 @@ void VolverAInicio(GtkWidget *widget, gpointer data);
 void Salir(GtkWidget *widget, gpointer data);
 void mostrar_acerca(GtkWidget *widget, gpointer data);
 void mostrar_ayuda(GtkWidget *widget, gpointer data);
+void PintarCaja(int x, int y);
+void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data);
 GtkWidget *CrearTablero();
 
 #endif /* DECLARACIONESGTK_H_ */
