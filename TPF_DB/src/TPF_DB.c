@@ -14,8 +14,6 @@
 #include <time.h>
 #include "funciones.h"
 
-#define CAJA (tablero[fila][columna])
-
 int N = 0;  //Dimension de la matriz de cajas (no del tablero)
 
 
@@ -66,7 +64,7 @@ struct caja {
 
 
 //Imprime el tablero en el terminal
-void PrintBox(struct caja cajas[][N]){
+void PrintBox(struct caja **cajas){
 	printf("\n");
     for(int i=0; i < N; i++){
         printf("+");
@@ -86,7 +84,7 @@ void PrintBox(struct caja cajas[][N]){
     }
 }
 
-void PrintBox2(struct caja cajas[][N]){
+void PrintBox2(struct caja **cajas){
 	printf("\n");
     for(int i=0; i < N; i++){
         printf("+");
@@ -106,7 +104,7 @@ void PrintBox2(struct caja cajas[][N]){
     }
 }
 
-void fPrintBox(struct caja cajas[][N]){
+void fPrintBox(struct caja **cajas){
 	FILE *board;
 	board = fopen("tablero.txt", "w");
 	fprintf(board,"\n");
@@ -128,8 +126,72 @@ void fPrintBox(struct caja cajas[][N]){
 	}
 	fclose(board);
 }
+
+
+int BoardFromTxt(struct caja **tablero, int *cajasAbiertas){
+	FILE *board;
+	int up, down, der, izq;
+	board = fopen("board1.txt", "r");
+	if (board==NULL){
+		return -1;
+	}
+	//lee el tablero asignando sus pesos a cada pared
+	for (int i=0; i<N; i++){
+		for (int j=0; j<N; j++){
+			fscanf(board, "%d %d %d %d\n", &up, &down, &der, &izq);
+			tablero[i][j].ARRIBA = up;
+			tablero[i][j].peso += (up>=2)?PESO:0;
+
+			tablero[i][j].ABAJO = down;
+			tablero[i][j].peso += (down>=2)?PESO:0;
+
+			tablero[i][j].DER = der;
+			tablero[i][j].peso += (der>=2)?PESO:0;
+
+			tablero[i][j].IZQ = izq;
+			tablero[i][j].peso += (izq>=2)?PESO:0;
+		}
+	}
+
+	fclose(board);
+
+	//le damos valores a pCerradas y cajas2p
+	for (int i=0; i<N; i++){
+		for (int j=0; j<N; j++){
+			int cont = 0;
+			if (tablero[i][j].ARRIBA%2){
+				tablero[i][j].pCerradas++;
+				cont++;
+			}
+			if (tablero[i][j].ABAJO%2){
+				tablero[i][j].pCerradas++;
+				cont++;
+			}
+			if (tablero[i][j].DER%2){
+				tablero[i][j].pCerradas++;
+				cont++;
+			}
+			if (tablero[i][j].IZQ%2){
+				tablero[i][j].pCerradas++;
+				cont++;
+			}
+
+			if (cont >= 2){
+				cajas2p++;
+			}
+			if (cont == 4){
+				*cajasAbiertas -= 1;
+			}
+		}
+	}
+
+
+	return 0;
+}
+
+
 //Inicializa y cera las paredes
-void InitBoxes(struct caja cajas[][N]){
+void InitBoxes(struct caja **cajas){
 	/*Todas las cajas inician con todas las paredes y pCerradas en cero
 	 * PERO el peso no es el mismo para todas, las paredes que esten
 	 * en el 'borde' del tablero ya le agregan peso a la caja
@@ -150,8 +212,27 @@ void InitBoxes(struct caja cajas[][N]){
 }
 
 
+struct caja **
+CrearTablero(int size){
+	/*
+	* Funcion que crea el tablero dependiendo del tamaño que recibe.
+	* Parametros:
+	* 	size -> tamaño introducido por el usuario.
+	* Retorno:
+	*  La posicion de memoria donde se encuentra el tablero creado.
+	*/
+	struct caja **board;
+	board=malloc(size*sizeof(struct caja));
+	for(int i=0;i<size;i++){
+		board[i]=malloc(size*sizeof(struct caja));
+	}
+
+	return board;
+}
+
+
 //Se actualiza el peso de las cajas adyacentes a caja[x][y]
-void ActualizarPeso(struct caja caja[][N], int x, int y){
+void ActualizarPeso(struct caja **caja, int x, int y){
 	/* Si la caja en (x,y) tiene pCerradas==2 se llama esta funcion
 	 * que a cada caja adyacente le suma un PESO en la pared correspondiente
 	 * (la pared 'pegada' a caja[x][y])
@@ -177,7 +258,7 @@ void ActualizarPeso(struct caja caja[][N], int x, int y){
 
 
 //Agrega pared y retorna la cantidad de cajas cerradas en el proceso
-int AgregarPared(struct caja tablero[][N], int x, int y, int p){
+int AgregarPared(struct caja **tablero, int x, int y, int p){
 	//Se agrega una pared p a la caja en tablero[x][y]
 
 	int cajasCerradas = 0;
@@ -280,20 +361,20 @@ int AgregarPared(struct caja tablero[][N], int x, int y, int p){
 
 
 //Controla que las paredes no esten cerradas
-int pared_check(struct caja tablero[][N], int x, int y, int p){
+int pared_check(struct caja **tablero, int x, int y, int p){
 	switch(p){
 		case 0:
-			if (CAJA.ARRIBA%2 == CERRADA){
+			if (tablero[x][y].ARRIBA%2 == CERRADA){
 				return 0;
 			}
 			break;
 		case 1:
-			if (CAJA.ABAJO%2 == CERRADA){
+			if (tablero[x][y].ABAJO%2 == CERRADA){
 				return 0;
 			}
 			break;
 		case 2:
-			if (CAJA.DER%2 == CERRADA){
+			if (tablero[x][y].DER%2 == CERRADA){
 				return 0;
 			}
 			break;
@@ -307,7 +388,7 @@ int pared_check(struct caja tablero[][N], int x, int y, int p){
 }
 
 
-int Esquinas(struct caja tablero[][N]) {
+int Esquinas(struct caja **tablero) {
 	if (tablero[0][0].pCerradas==2){
 		if (tablero[0][0].ARRIBA==0 && tablero[0][0].IZQ==0){
 			ultCoords[0] = 0;
@@ -343,7 +424,7 @@ int Esquinas(struct caja tablero[][N]) {
 
 
 //Movimiento de la pc de manera random, retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int print, int turno, int seed){
+int mov_pc(struct caja **tablero, int fila, int columna, int absRandom, int print, int turno, int seed){
 	/* Hace un movimiento en una caja random o en la fila y columna indicadas.
 	 *
 	 * Mov random:
@@ -357,7 +438,7 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int p
 	//Si en (fila, columna) no hay una caja valida, se elige coordenadas random hasta encontrar una.
 	if(absRandom==1)
 	{
-		while(CAJA.pCerradas == 4){  //absolutamente random. Cuando se hace el mov inicial o bien ya no se puede evitar cajas con 2 paredes
+		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random. Cuando se hace el mov inicial o bien ya no se puede evitar cajas con 2 paredes
 			fila = rand()% N;
 			columna = rand()% N;
 		}
@@ -365,7 +446,7 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int p
 	else if (absRandom==0)
 	{
 		if(cajas3p){  //encuentra cajas con 3 paredes si las hay
-			while(CAJA.pCerradas!=3 ){
+			while(tablero[fila][columna].pCerradas!=3 ){
 				fila= rand()% N;
 				columna = rand()% N;
 			}
@@ -493,7 +574,7 @@ int mov_pc(struct caja tablero[][N], int fila, int columna, int absRandom, int p
 }
 
 
-int JuegaPC(struct caja tablero[][N], int print, int turno, int seed){
+int JuegaPC(struct caja **tablero, int print, int turno, int seed){
 	/* Hace un movimiento evitando las cajas que ya tengan dos paredes << pCerradas==2 >>
 	 * (ya que al agregarle la tercera le daria ventaja al oponente)
 	 *
@@ -519,19 +600,19 @@ int JuegaPC(struct caja tablero[][N], int print, int turno, int seed){
 	{
 		fila = rand()%N;
 		columna = rand()%N;
-		cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno);
+		cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno, seed);
 	}
 	else if( cajas2p!=N*N || cajas3p!=0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
 	{
 		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
-		cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno);
+		cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno, seed);
 	}
 
 	return cajasCerradas;
 }
 
 
-int DotsNBoxes(int print, int dim, int iter){
+int DotsNBoxes(int print, int dim, int from_txt, int iter){
 
 	N = dim;
 
@@ -542,7 +623,7 @@ int DotsNBoxes(int print, int dim, int iter){
 	puntos[1] = 0;
 
 	//Creacion de tablero
-	struct caja tablero[N][N];
+	struct caja **tablero = CrearTablero(N);
 	InitBoxes(tablero);
 	if(print)
 		printf("\n\n\n//////////////////////////////////////////////// NEW GAME ////////////////////////////////////////////////\n\nLa matriz es de: %d x %d \n", N+1, N+1);
@@ -552,6 +633,17 @@ int DotsNBoxes(int print, int dim, int iter){
 	int repite;  //indica si se repite el turno o no
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 	cajas2p = cajas3p = 0;
+
+	//inicia el juego con un tablero leido desde un archivo de texto
+	if (from_txt){
+		puts("LEYENDO TABLERO DESDE ARCHIVO...");
+		if (BoardFromTxt(tablero, &cajasAbiertas)==-1){
+			puts("ERROR AL ABRIR EL ARCHIVO");
+			return -1;
+		}
+		puts("\t\t\t\nInicia la partida con el siguiente tablero:");
+		PrintBox(tablero);
+	}
 
 	static int iteracion=0;  //usada para generar numeros random
 	while (cajasAbiertas)
@@ -618,7 +710,7 @@ int main(){
 	scanf("%d", &times);
 
 	for(i=1; i <= times; i++){
-		ganador = DotsNBoxes(1, 3, i);
+		ganador = DotsNBoxes(1, 3, 1, i);
 		if(ganador == 1)
 			partGanadas[1] += 1;
 		else if(ganador == 0)
