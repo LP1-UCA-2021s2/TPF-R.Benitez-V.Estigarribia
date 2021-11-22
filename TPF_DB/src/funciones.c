@@ -46,14 +46,6 @@ void PrintBox(struct caja **cajas){
 
 //Inicializa y cera las paredes
 void InitBoxes(struct caja **cajas){
-	/*Todas las cajas inician con todas las paredes y pCerradas en cero
-	 * PERO el peso no es el mismo para todas, las paredes que esten
-	 * en el 'borde' del tablero ya le agregan peso a la caja
-	 *
-	 * Por tanto las cajas ubicadas en las esquinas tienen peso inicial 4
-	 * y las que estan en el borde tienen peso inicial 2
-	 */
-
 	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++){
 			cajas[i][j].peso = 0;
@@ -62,21 +54,6 @@ void InitBoxes(struct caja **cajas){
 			cajas[i][j].ABAJO   = ABIERTA;
 			cajas[i][j].DER     = ABIERTA;
 			cajas[i][j].IZQ     = ABIERTA;
-
-			//Peso de cajas en el borde
-			if(i==0){
-				cajas[i][j].peso += PESO;
-				cajas[i][j].ARRIBA += PESO;
-			}if(j==0){
-				cajas[i][j].peso += PESO;
-				cajas[i][j].IZQ += PESO;
-			}if(i==N-1){
-				cajas[i][j].peso += PESO;
-				cajas[i][j].ABAJO += PESO;
-			}if(j==N-1){
-				cajas[i][j].peso += PESO;
-				cajas[i][j].DER += PESO;
-			}
 		}
 	}
 }
@@ -126,6 +103,12 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 		//Agrega arriba
 		case 0:
 			tablero[x][y].ARRIBA += CERRADA;
+
+			if (x == 0){
+				tablero[x][y].ARRIBA += PESO;
+				tablero[x][y].peso += PESO;
+			}
+
 			//Se agrega tambien la pared a la caja adyacente
 			if(x-1>=0)
 			{
@@ -139,6 +122,11 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 
 			tablero[x][y].ABAJO += CERRADA;
 
+			if (x == N-1){
+				tablero[x][y].ABAJO += PESO;
+				tablero[x][y].peso += PESO;
+			}
+
 			if(x+1<N)
 			{
 				if(tablero[x+1][y].ARRIBA%2 == ABIERTA){
@@ -151,6 +139,11 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 
 			tablero[x][y].DER += CERRADA;
 
+			if (y == N-1){
+				tablero[x][y].DER += PESO;
+				tablero[x][y].peso += PESO;
+			}
+
 			if(y+1<N)
 			{
 				if(tablero[x][y+1].IZQ%2 == ABIERTA){
@@ -162,6 +155,11 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 		case 3: 	//Agrega a la izquierda
 
 			tablero[x][y].IZQ += CERRADA;
+
+			if (y == 0){
+				tablero[x][y].IZQ += PESO;
+				tablero[x][y].peso += PESO;
+			}
 
 			if(y-1>=0)
 			{
@@ -233,6 +231,40 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 }
 
 
+int Esquinas(struct caja **tablero) {
+	if (tablero[0][0].pCerradas==2){
+		if (tablero[0][0].ARRIBA==0 && tablero[0][0].IZQ==0){
+			ultCoords[0] = 0;
+			ultCoords[1] = 0;
+			return 1;
+		}
+	}
+	if (tablero[0][N-1].pCerradas==2) {
+		if (tablero[0][N-1].ARRIBA==0 && tablero[0][N-1].DER==0) {
+			ultCoords[0] = 0;
+			ultCoords[1] = N-1;
+			return 1;
+		}
+	}
+	if (tablero[N-1][0].pCerradas==2) {
+		if (tablero[N-1][0].ABAJO==0 && tablero[N-1][0].IZQ==0) {
+			ultCoords[0] = N-1;
+			ultCoords[1] = 0;
+			return 1;
+		}
+	}
+	if (tablero[N-1][N-1].pCerradas==2) {
+		if (tablero[N-1][N-1].ABAJO==0 && tablero[N-1][N-1].DER==0) {
+			ultCoords[0] = N-1;
+			ultCoords[1] = N-1;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento o -1 si no logro realizarse una jugada valida
 int mov_usuario(struct caja **tablero, int i, int j, int p){
 
@@ -282,9 +314,14 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 	//Si en (fila, columna) no hay una caja valida, se buscan coordenadas random hasta encontrar una.
 	if(absRandom)
 	{
-		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
-			fila = rand()% N;
-			columna = rand()% N;
+		if (Esquinas(tablero)){
+			fila = ultCoords[0];
+			columna = ultCoords[1];
+		}else{
+			while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
+				fila = rand()% N;
+				columna = rand()% N;
+			}
 		}
 	}
 	else  //Mov random con condiciones extra
@@ -304,11 +341,38 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 	printf("\nCoordenadas de la caja: %d, %d", fila, columna);
 
 
-	//Ahora elige pared random a cerrar
-	pared = rand()% 4;
-	while(pared_check(tablero, fila, columna, pared) == 0){		//Elige hasta encontrar una pared abierta
-		pared = rand()% 4;
+	pared = rand()% 4;  //si no es con random va a elegir un solo valor para la mayoria de las jugadas
+	int pesoPared;
+	if (pared==0){
+		pesoPared = tablero[fila][columna].ARRIBA;
+	}else if(pared==1){
+		pesoPared = tablero[fila][columna].ABAJO;
+	}else if(pared==2){
+		pesoPared = tablero[fila][columna].DER;
+	}else if(pared==3){
+		pesoPared = tablero[fila][columna].IZQ;
 	}
+
+	if (pesoPared == 1){
+		pesoPared = 4;  //si la pared elegida aleatoriamente esta cerrada (valor 1) se le asigna un valor alto a pesoPared para que si o si entre en algun if abajo
+	}
+	if (tablero[fila][columna].ARRIBA<pesoPared && tablero[fila][columna].ARRIBA!=1){
+		pared = 0;
+		pesoPared = tablero[fila][columna].ARRIBA;
+	}
+	if (tablero[fila][columna].ABAJO<pesoPared && tablero[fila][columna].ABAJO!=1){
+		pared = 1;
+		pesoPared = tablero[fila][columna].ABAJO;
+	}
+	if (tablero[fila][columna].DER<pesoPared && tablero[fila][columna].DER!=1){
+		pared = 2;
+		pesoPared = tablero[fila][columna].DER;
+	}
+	if (tablero[fila][columna].IZQ<pesoPared && tablero[fila][columna].IZQ!=1){
+		pared = 3;
+		pesoPared = tablero[fila][columna].IZQ;
+	}
+
 	printf("\n\n0:Arriba\n1:Abajo\n2:Derecha\n3:Izquierda\nPared a cerrar: %d", pared);
 
 
