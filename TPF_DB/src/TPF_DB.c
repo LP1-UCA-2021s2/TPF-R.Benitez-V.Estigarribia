@@ -23,6 +23,10 @@ int N = 0;  //Dimension de la matriz de cajas (no del tablero)
 //Si no hay cajas de peso=4 entonces cajasP6-cajasP4 == 0
 int cajas2p, cajas3p, cajasP4, cajasP6;
 
+/*cadenas: el index del array corresponde al identificador de la cadena, y el valor contenido es la long de la cadena, cadena[0] siempre se ignora
+ porque el 0 se usa para indicar que una caja no pertenece a una cadena*/
+int cadenas[100];
+
 enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas para operar con las cajas
 
 int puntos[2];	//puntos[0] contiene los puntos de la PC, puntos[1] los del usuario
@@ -53,6 +57,7 @@ struct caja {
 	 */
 
 	//Declaracion de atributos de caja
+	unsigned int id_cadena;  //indica si la caja pertenece a una 'cadena' de cajas, 0 si es que no, cualquier entero si es que si
 	unsigned int peso;
     unsigned int pCerradas;  //indica la cantidad de paredes cerradas
     unsigned int ARRIBA :2;
@@ -203,6 +208,7 @@ void InitBoxes(struct caja **cajas){
 		for(int j=0; j<N; j++){
 			cajas[i][j].peso = 0;
 			cajas[i][j].pCerradas = 0;
+			cajas[i][j].id_cadena = 0;
 			cajas[i][j].ARRIBA  = ABIERTA;
 			cajas[i][j].ABAJO   = ABIERTA;
 			cajas[i][j].DER     = ABIERTA;
@@ -342,6 +348,9 @@ int AgregarPared(struct caja **tablero, int x, int y, int p){
 	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;
 		cajas3p -= 1;
+		if (tablero[x][y].id_cadena != 0) {
+			cadenas[tablero[x][y].id_cadena] = 100;
+		}
 	}
 
 
@@ -388,38 +397,55 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 }
 
 
-int Esquinas(struct caja **tablero) {
-	if (tablero[0][0].pCerradas==2){
-		if (tablero[0][0].ARRIBA==0 && tablero[0][0].IZQ==0){
-			ultCoords[0] = 0;
-			ultCoords[1] = 0;
-			return 1;
+int Concatenar (struct caja **tablero, int x, int y, int id, int longitud) {
+
+	tablero[x][y].id_cadena = id;
+
+	if (tablero[x][y].ARRIBA%2 == ABIERTA) {
+		if (x-1 >= 0) {
+			if (tablero[x-1][y].id_cadena == 0) {
+				longitud = Concatenar (tablero, x-1, y, id, longitud);
+			}
 		}
 	}
-	if (tablero[0][N-1].pCerradas==2) {
-		if (tablero[0][N-1].ARRIBA==0 && tablero[0][N-1].DER==0) {
-			ultCoords[0] = 0;
-			ultCoords[1] = N-1;
-			return 1;
+	if (tablero[x][y].ABAJO%2 == ABIERTA) {
+		if (x+1 < N) {
+			if (tablero[x+1][y].id_cadena == 0) {
+				longitud = Concatenar (tablero, x+1, y, id, longitud);
+			}
 		}
 	}
-	if (tablero[N-1][0].pCerradas==2) {
-		if (tablero[N-1][0].ABAJO==0 && tablero[N-1][0].IZQ==0) {
-			ultCoords[0] = N-1;
-			ultCoords[1] = 0;
-			return 1;
+	if (tablero[x][y].IZQ%2 == ABIERTA) {
+		if (y-1 >= 0) {
+			if (tablero[x][y-1].id_cadena == 0) {
+				longitud = Concatenar (tablero, x, y-1, id, longitud);
+			}
 		}
 	}
-	if (tablero[N-1][N-1].pCerradas==2) {
-		if (tablero[N-1][N-1].ABAJO==0 && tablero[N-1][N-1].DER==0) {
-			ultCoords[0] = N-1;
-			ultCoords[1] = N-1;
-			return 1;
+	if (tablero[x][y].DER%2 == ABIERTA) {
+		if (y+1 < N) {
+			if (tablero[x][y+1].id_cadena == 0) {
+				longitud = Concatenar (tablero, x, y+1, id, longitud);
+			}
 		}
 	}
 
+	return ++longitud;
+}
 
-	return 0;
+
+void BuscarCadenas (struct caja **tablero) {
+	int long_cadena, id_cadena = 1;
+	for (int i=0; i<N; i++) {
+		for (int j=0; j<N; j++) {
+			if (tablero[i][j].id_cadena == 0 && tablero[i][j].pCerradas != 4){
+				long_cadena = Concatenar (tablero, i, j, id_cadena, 0);
+				cadenas[id_cadena++] = long_cadena;
+			}
+		}
+	}
+	printf("\n\n ------------ Cadenas formadas: %d -----------\n", id_cadena-1);
+	cadenas[0] = -1;  //indica al programa que las cadenas ya estan creadas
 }
 
 
@@ -457,98 +483,61 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom, int prin
 			}
 		}
 	}
-	else if (absRandom == 2) // v1** si es el turno de PC2 y cajas2p==N*N, en lugar de hacer un mov totalmente random entra aca
+	else if (absRandom == 2)
 	{
-		puts("\n\t======= Buscando cajas de peso 4 ========");  //v1** no tiene nada que ver con pesos 4 aun
-		static int flag = 1;
-		static int cont;	//cont es un contador de cajas de peso 4 y pCerradas<2
-
-		if (cajas2p == N*N){
-			flag = 0;
+		puts("\n\n\tELIGIENDO CAJA DE CADENA");
+		int j, aux = 100;
+		for (int i=1; i<100; i++) {
+			if (cadenas[i] < aux) {
+				aux = cadenas[i];
+				j = i;
+			}
 		}
-		if (flag) {
-			cont = 0;
-			for (int i=0; i < N; i++) {
-				for (int j=0; j < N; j++) {
-					if (tablero[i][j].peso==4 && tablero[i][j].pCerradas<2){
-						cont++;
-					}
-				}
-			}
-
-			flag = cont;
-		}
-
-		if (flag) {  //v1** jamas entra aca si es que ya no hay cajas con pCerradas<2
-			puts("ENTRA1");
-			while (!(tablero[fila][columna].peso==4 && tablero[fila][columna].pCerradas<2)){
-				fila = rand()% N;
-				columna = rand()% N;
-			}
-			puts("SALE1");
-		} else {
-			if (Esquinas(tablero)) {
-				fila = ultCoords[0];
-				columna = ultCoords[1];
-			} else {
-				puts("ENTRA2");
-				/*
-				while (!(tablero[fila][columna].peso==4 && tablero[fila][columna].pCerradas!=4)) {  //ojo, solo si aun hay cajas de peso 4 (hacer comprobacion cajasP4-cajasP6)
-					fila = rand()% N;
-					columna = rand()% N;
-				}*/
-				while(tablero[fila][columna].pCerradas == 4){  //v1** absolutamente random (por mientras)
-							fila = rand()% N;
-							columna = rand()% N;
-						}
-
-				puts("SALE2");
-			}
+		printf("\n\n\t\tLISTA DE CADENAS: [%d, %d, %d, %d]\n\t\tCADENA ELEGIDA: %d\n", cadenas[1], cadenas[2], cadenas[3], cadenas[4], j);
+		cadenas[j] = 100;
+		while (tablero[fila][columna].id_cadena != j) {
+			fila = rand()%N;
+			columna = rand()%N;
 		}
 	}
+
 	if(print)
 		printf("\nCoordenadas de la caja: %d, %d ", fila, columna);
 
 
 	//elige la pared de menor peso
-	if (turno == 0){  //caso: ARRIBA tiene peso 1 y hay paredes abiertas pero todos tienen peso, no entra a ningun if y pared=0
-		pared = rand()% 4;  //si no es con random va a elegir un solo valor para la mayoria de las jugadas
-		int pesoPared;
-		if (pared==0){
-			pesoPared = tablero[fila][columna].ARRIBA;
-		}else if(pared==1){
-			pesoPared = tablero[fila][columna].ABAJO;
-		}else if(pared==2){
-			pesoPared = tablero[fila][columna].DER;
-		}else if(pared==3){
-			pesoPared = tablero[fila][columna].IZQ;
-		}
+	//caso: ARRIBA tiene peso 1 y hay paredes abiertas pero todos tienen peso, no entra a ningun if y pared=0
+	pared = rand()% 4;  //si no es con random va a elegir un solo valor para la mayoria de las jugadas
+	int pesoPared;
+	if (pared==0){
+		pesoPared = tablero[fila][columna].ARRIBA;
+	}else if(pared==1){
+		pesoPared = tablero[fila][columna].ABAJO;
+	}else if(pared==2){
+		pesoPared = tablero[fila][columna].DER;
+	}else if(pared==3){
+		pesoPared = tablero[fila][columna].IZQ;
+	}
 
-		if (pesoPared == 1){
-			pesoPared = 4;  //si la pared elegida aleatoriamente esta cerrada (valor 1) se le asigna un valor alto a pesoPared para que si o si entre en algun if abajo
-		}
+	if (pesoPared == 1){
+		pesoPared = 4;  //si la pared elegida aleatoriamente esta cerrada (valor 1) se le asigna un valor alto a pesoPared para que si o si entre en algun if abajo
+	}
 
-		if (tablero[fila][columna].ARRIBA<pesoPared && tablero[fila][columna].ARRIBA!=1){
-			pared = 0;
-			pesoPared = tablero[fila][columna].ARRIBA;
-		}
-		if (tablero[fila][columna].ABAJO<pesoPared && tablero[fila][columna].ABAJO!=1){
-			pared = 1;
-			pesoPared = tablero[fila][columna].ABAJO;
-		}
-		if (tablero[fila][columna].DER<pesoPared && tablero[fila][columna].DER!=1){
-			pared = 2;
-			pesoPared = tablero[fila][columna].DER;
-		}
-		if (tablero[fila][columna].IZQ<pesoPared && tablero[fila][columna].IZQ!=1){
-			pared = 3;
-			pesoPared = tablero[fila][columna].IZQ;
-		}
-	}else{//Ahora elige pared random a cerrar
-		pared = rand()% 4;
-		while(pared_check(tablero, fila, columna, pared) == 0){		//Elige hasta encontrar una pared abierta
-			pared = rand()% 4;
-		}
+	if (tablero[fila][columna].ARRIBA<pesoPared && tablero[fila][columna].ARRIBA!=1){
+		pared = 0;
+		pesoPared = tablero[fila][columna].ARRIBA;
+	}
+	if (tablero[fila][columna].ABAJO<pesoPared && tablero[fila][columna].ABAJO!=1){
+		pared = 1;
+		pesoPared = tablero[fila][columna].ABAJO;
+	}
+	if (tablero[fila][columna].DER<pesoPared && tablero[fila][columna].DER!=1){
+		pared = 2;
+		pesoPared = tablero[fila][columna].DER;
+	}
+	if (tablero[fila][columna].IZQ<pesoPared && tablero[fila][columna].IZQ!=1){
+		pared = 3;
+		pesoPared = tablero[fila][columna].IZQ;
 	}
 
 
@@ -592,20 +581,39 @@ int JuegaPC(struct caja **tablero, int print, int turno, int seed){
 	fila = ultCoords[0];
 	columna = ultCoords[1];
 
-	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
-	if (cajas2p==N*N && turno==0 && !cajas3p){
-		cajasCerradas = mov_pc(tablero, fila, columna, 2, print, turno, seed);
+
+	if (cajas2p == N*N && cadenas[0] != -1) {
+		for (int i=0; i<100; i++) {
+			cadenas[i] = 100;
+		}
+		BuscarCadenas(tablero);
 	}
-	else if((tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p)
-	{
-		fila = rand()%N;
-		columna = rand()%N;
-		cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno, seed);
+
+	if (turno==0) {
+		if (cajas2p == N*N && !cajas3p) {
+			cajasCerradas = mov_pc(tablero, fila, columna, 2, print, turno, seed);
+		}
+		else if(tablero[fila][columna].pCerradas==0)//Mov random si es la primera jugada
+		{
+			fila = rand()%N;
+			columna = rand()%N;
+			cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno, seed);
+		}
+		else if( cajas2p!=N*N || cajas3p!=0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
+		{
+			//Realiza el movimiento en la ultima caja elegida, o un en una caja random
+			cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno, seed);
+		}
 	}
-	else if( cajas2p!=N*N || cajas3p!=0 )  //esto es importante para evitar un loop infinito si llamamos mov_pc con absRandom==0
+	else
 	{
-		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
-		cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno, seed);
+		if ((tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p) {
+			fila = rand()%N;
+			columna = rand()%N;
+			cajasCerradas = mov_pc(tablero, fila, columna, 1, print, turno, seed);
+		}else if( cajas2p!=N*N || cajas3p!=0 ){
+			cajasCerradas = mov_pc(tablero, fila, columna, 0, print, turno, seed);
+		}
 	}
 
 	return cajasCerradas;
@@ -633,6 +641,7 @@ int DotsNBoxes(int print, int dim, int from_txt, int iter){
 	int repite;  //indica si se repite el turno o no
 	int cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 	cajas2p = cajas3p = 0;
+	cadenas[0]=100;
 
 	//inicia el juego con un tablero leido desde un archivo de texto
 	if (from_txt){
@@ -668,9 +677,9 @@ int DotsNBoxes(int print, int dim, int from_txt, int iter){
 				PrintBox(tablero);
 				//printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 				//PrintBox2(tablero);
-				printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------ %d\n", puntos[1], puntos[0], iter);
+				printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------ %d - %d\n", puntos[1], puntos[0], cajas2p, iter);
 			}else{
-				printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------ %d\n", puntos[1], puntos[0], iter);
+				printf("\n--------------  PC 1: %d  | PC 2: %d  ------------------ %d - %d\n", puntos[1], puntos[0], cajas2p, iter);
 			}
 
 
@@ -710,7 +719,7 @@ int main(){
 	scanf("%d", &times);
 
 	for(i=1; i <= times; i++){
-		ganador = DotsNBoxes(1, 3, 1, i);
+		ganador = DotsNBoxes(1, 6, 0, i);
 		if(ganador == 1)
 			partGanadas[1] += 1;
 		else if(ganador == 0)
