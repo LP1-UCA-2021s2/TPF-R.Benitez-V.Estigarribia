@@ -382,6 +382,8 @@ GtkWidget *CrearTablero(){
 		JuegaPC(tablero);
 	}
 
+	cadenas[0]=100;
+
 
 	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()
 

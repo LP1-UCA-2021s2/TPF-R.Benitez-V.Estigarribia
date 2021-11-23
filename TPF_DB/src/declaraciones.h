@@ -4,6 +4,11 @@
 
 
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
+
+/*cadenas: el index del array corresponde al identificador de la cadena, y el valor contenido es la long de la cadena, cadena[0] siempre se ignora
+ porque el 0 se usa para indicar que una caja no pertenece a una cadena*/
+int cadenas[100];
+
 int turno, color, cajasAbiertas;
 
 
@@ -30,6 +35,7 @@ struct caja {
 	 */
 
 	//Declaracion de atributos de caja
+	unsigned int id_cadena;  //indica si la caja pertenece a una 'cadena' de cajas, 0 si es que no, cualquier entero si es que si
 	unsigned int peso;
     unsigned int pCerradas;  //indica la cantidad de paredes cerradas
     unsigned int ARRIBA :2;

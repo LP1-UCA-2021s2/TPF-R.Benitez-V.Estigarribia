@@ -21,7 +21,6 @@ enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas 
 
 int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio (utilizada por la IA)
 
-
 //Imprime el tablero en el terminal
 void PrintBox(struct caja **cajas){
 	printf("\n");
@@ -50,6 +49,7 @@ void InitBoxes(struct caja **cajas){
 		for(int j=0; j<N; j++){
 			cajas[i][j].peso = 0;
 			cajas[i][j].pCerradas = 0;
+			cajas[i][j].id_cadena = 0;
 			cajas[i][j].ARRIBA  = ABIERTA;
 			cajas[i][j].ABAJO   = ABIERTA;
 			cajas[i][j].DER     = ABIERTA;
@@ -196,6 +196,9 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	if (tablero[x][y].pCerradas == 4){
 		cajasCerradas += 1;  //local
 		cajas3p -= 1;  //global
+		if (tablero[x][y].id_cadena != 0) {
+			cadenas[tablero[x][y].id_cadena] = 100;
+		}
 		PintarCaja(x, y);
 	}
 
@@ -231,37 +234,55 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 }
 
 
-int Esquinas(struct caja **tablero) {
-	if (tablero[0][0].pCerradas==2){
-		if (tablero[0][0].ARRIBA==0 && tablero[0][0].IZQ==0){
-			ultCoords[0] = 0;
-			ultCoords[1] = 0;
-			return 1;
+int Concatenar (struct caja **tablero, int x, int y, int id, int longitud) {
+
+	tablero[x][y].id_cadena = id;
+
+	if (tablero[x][y].ARRIBA%2 == ABIERTA) {
+		if (x-1 >= 0) {
+			if (tablero[x-1][y].id_cadena == 0) {
+				longitud = Concatenar (tablero, x-1, y, id, longitud);
+			}
 		}
 	}
-	if (tablero[0][N-1].pCerradas==2) {
-		if (tablero[0][N-1].ARRIBA==0 && tablero[0][N-1].DER==0) {
-			ultCoords[0] = 0;
-			ultCoords[1] = N-1;
-			return 1;
+	if (tablero[x][y].ABAJO%2 == ABIERTA) {
+		if (x+1 < N) {
+			if (tablero[x+1][y].id_cadena == 0) {
+				longitud = Concatenar (tablero, x+1, y, id, longitud);
+			}
 		}
 	}
-	if (tablero[N-1][0].pCerradas==2) {
-		if (tablero[N-1][0].ABAJO==0 && tablero[N-1][0].IZQ==0) {
-			ultCoords[0] = N-1;
-			ultCoords[1] = 0;
-			return 1;
+	if (tablero[x][y].IZQ%2 == ABIERTA) {
+		if (y-1 >= 0) {
+			if (tablero[x][y-1].id_cadena == 0) {
+				longitud = Concatenar (tablero, x, y-1, id, longitud);
+			}
 		}
 	}
-	if (tablero[N-1][N-1].pCerradas==2) {
-		if (tablero[N-1][N-1].ABAJO==0 && tablero[N-1][N-1].DER==0) {
-			ultCoords[0] = N-1;
-			ultCoords[1] = N-1;
-			return 1;
+	if (tablero[x][y].DER%2 == ABIERTA) {
+		if (y+1 < N) {
+			if (tablero[x][y+1].id_cadena == 0) {
+				longitud = Concatenar (tablero, x, y+1, id, longitud);
+			}
 		}
 	}
 
-	return 0;
+	return ++longitud;
+}
+
+
+void BuscarCadenas (struct caja **tablero) {
+	int long_cadena, id_cadena = 1;
+	for (int i=0; i<N; i++) {
+		for (int j=0; j<N; j++) {
+			if (tablero[i][j].id_cadena == 0 && tablero[i][j].pCerradas != 4){
+				long_cadena = Concatenar (tablero, i, j, id_cadena, 0);
+				cadenas[id_cadena++] = long_cadena;
+			}
+		}
+	}
+	printf("\n\n ------------ Cadenas formadas: %d -----------\n", id_cadena-1);
+	cadenas[0] = -1;  //indica al programa que las cadenas ya estan creadas
 }
 
 
@@ -312,19 +333,14 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 	int cajasCerradas, pared;
 
 	//Si en (fila, columna) no hay una caja valida, se buscan coordenadas random hasta encontrar una.
-	if(absRandom)
+	if(absRandom == 1)
 	{
-		if (Esquinas(tablero)){
-			fila = ultCoords[0];
-			columna = ultCoords[1];
-		}else{
-			while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
-				fila = rand()% N;
-				columna = rand()% N;
-			}
+		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
+			fila = rand()% N;
+			columna = rand()% N;
 		}
 	}
-	else  //Mov random con condiciones extra
+	else if (absRandom == 0) //Mov random con condiciones extra
 	{
 		if(cajas3p){
 			while( tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas!=3 ){
@@ -336,6 +352,23 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 				fila= rand()% N;
 				columna = rand()% N;
 			}
+		}
+	}
+	else if (absRandom == 2)
+	{
+		puts("\n\n\tELIGIENDO CAJA DE CADENA");
+		int j, aux = 100;
+		for (int i=1; i<100; i++) {
+			if (cadenas[i] < aux) {
+				aux = cadenas[i];
+				j = i;
+			}
+		}
+		printf("\n\n\t\tLISTA DE CADENAS: [%d, %d, %d, %d]\n\t\tCADENA ELEGIDA: %d\n", cadenas[1], cadenas[2], cadenas[3], cadenas[4], j);
+		cadenas[j] = 100;
+		while (tablero[fila][columna].id_cadena != j) {
+			fila = rand()%N;
+			columna = rand()%N;
 		}
 	}
 	printf("\nCoordenadas de la caja: %d, %d", fila, columna);
@@ -413,8 +446,19 @@ int JuegaPC(struct caja **tablero){
 	fila = ultCoords[0];
 	columna = ultCoords[1];
 
-	//Mov random si es la primera jugada o no quedan movimientos 'convenientes'
-	if( (tablero[fila][columna].pCerradas==0 || cajas2p==N*N) && !cajas3p )
+	if (cajas2p == N*N && cadenas[0] != -1) {
+		for (int i=0; i<100; i++) {
+			cadenas[i] = 100;
+		}
+		BuscarCadenas(tablero);
+	}
+
+	if (cajas2p == N*N && !cajas3p) {
+		cajasCerradas = mov_pc(tablero, fila, columna, 2);
+	}
+
+	//Mov random si es la primera jugada
+	else if(tablero[fila][columna].pCerradas==0)
 	{
 		fila = rand()%N;
 		columna = rand()%N;
@@ -425,9 +469,16 @@ int JuegaPC(struct caja **tablero){
 		//Realiza el movimiento en la ultima caja elegida, o un en una caja random
 		cajasCerradas = mov_pc(tablero, fila, columna, 0);
 	}
+	printf("\n- cajas2p: %d", cajas2p);
 
 	return cajasCerradas;
 }
+
+
+//int JuegaOponente(){ //PCvsPC
+//
+//}
+
 
 //Crea el tablero logico
 struct caja **
