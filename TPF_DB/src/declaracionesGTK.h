@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 
+const gchar *nombre1, *nombre2;
 GtkBuilder *builder;
 
 GtkWidget *box_tablero;

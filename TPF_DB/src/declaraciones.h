@@ -9,7 +9,8 @@ int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1
  porque el 0 se usa para indicar que una caja no pertenece a una cadena*/
 int cadenas[100];
 
-int turno, color, cajasAbiertas;
+// si el turno==0, juega el rival, si modoJuego==0, se juega Human vs PC
+int turno, color, cajasAbiertas, modoJuego;
 
 
 struct caja {
@@ -62,6 +63,7 @@ int pared_check(struct caja **tablero, int x, int y, int p);
 int mov_usuario(struct caja **tablero, int i, int j, int p);
 int mov_pc(struct caja **tablero, int fila, int columna, int absRandom);
 int JuegaPC(struct caja **tablero);
+int JuegaOponente(struct caja **tablero);
 struct caja **TableroNuevo(int size);
 
 

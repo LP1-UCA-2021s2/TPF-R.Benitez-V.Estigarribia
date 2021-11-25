@@ -475,9 +475,105 @@ int JuegaPC(struct caja **tablero){
 }
 
 
-//int JuegaOponente(){ //PCvsPC
-//
-//}
+void EnviarJugada (int i, j, p) {
+	int x1, y1, x2, y2;
+	char nombreArchLocal[30];
+	FILE *archLocal;
+
+	sprintf (nombreArchLocal, "%s.txt", nombre1);
+
+	if (p == 0) {
+		x1 = x2 = i +1;
+		y1 = j +1;
+		y2 = j +2;
+	}
+	else if (p == 1) {
+		x1 = x2 = i +2;
+		y1 = j +1;
+		y2 = j +2;
+	}
+	else if (p == 2) {
+		y1 = y2 = j +2;
+		x1 = i +1;
+		x2 = i +2;
+	}
+	else if (p == 3) {
+		y1 = y2 = j +1;
+		x1 = i +1;
+		x2 = i +2;
+	}
+
+	archLocal = fopen (nombreArchLocal, "w");
+
+	fprintf (archLocal, "%d,%d\n", x1, y1);
+	fprintf (archLocal, "%d,%d", x2, y2);
+
+	fclose (archLocal);
+
+}
+
+
+//PCvsPC
+int JuegaOponente(struct caja **tablero){
+
+	int x1, y1, x2, y2, i, j, p, cajasCerradas;
+
+	char nombreArchOponente[30];
+	sprintf (nombreArchOponente, "%s.txt", nombre2);
+
+	FILE *archOponente;
+	archOponente = fopen (nombreArchOponente, "r");
+	while (archOponente == NULL) {  //busca el archivo hasta poder leerlo
+		archOponente = fopen (nombreArchOponente, "r");
+	}
+
+	fscanf (archOponente, "%d,%d\n", &x1, &y1);
+	fscanf (archOponente, "%d,%d", &x2, &y2);
+
+	fclose (archOponente);
+	remove (nombreArchOponente);
+
+	/* Pasar de coordenadas de dos puntos a coordenadas de una caja y la pared correspondiente
+	 * - Se asume que el movimiento es valido*/
+	if (y1 == y2) {
+		if (y1 != N+1) {
+			j = y1 -1;
+			p = 3;
+		} else {
+			j = y1 -2;
+			p = 2;
+		}
+		if (x2 < x1) {
+			i = x2 -1;
+		} else {
+			i = x1 -1;
+		}
+	} else if (x1 == x2) {
+		if (x1 != N+1) {
+			i = x1 -1;
+			p = 0;
+		} else {
+			i = x1 -2;
+			p = 1;
+		}
+		if (y2 < y1) {
+			j = y2 -1;
+		} else {
+			j = y1 -1;
+		}
+	}
+
+	cajasCerradas = AgregarPared (tablero, i, j, p);
+	if (cajasCerradas){
+		puntos[1] += 10 * cajasCerradas;
+		printf("\nLa PC rival ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
+		printf("\n	PC rival gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[1]);
+	}
+
+	AgregarLinea(i, j, p);
+
+	return cajasCerradas;
+}
 
 
 //Crea el tablero logico

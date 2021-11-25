@@ -123,13 +123,11 @@ void JuegoNuevo(GtkWidget *widget, gpointer data){
 
 //Pide el nombre del usuario
 void nombre(GtkWidget *widget, gpointer data){
-	const gchar *nombre = gtk_entry_get_text (GTK_ENTRY(name_entry));
+	nombre1 = gtk_entry_get_text (GTK_ENTRY(name_entry));
 
-	printf("%s", nombre);
+	printf("%s", nombre1);
 
-	char nombre_txt[20];
-	sprintf(nombre_txt, "%s", nombre);
-	gtk_label_set_label(GTK_LABEL(lbl_name), nombre_txt);
+	gtk_label_set_label(GTK_LABEL(lbl_name), nombre1);
 }
 
 void QuienInicia(GtkWidget *widget, gpointer data){
@@ -194,10 +192,10 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	 *  ya sea del usuario o de la PC
 	 */
 	guint i,j;  //coords tablero grafico
-	int x, y;  //coords tablero logico (struct caja [][])
+	int x, y, p;  //coords tablero logico (struct caja [][])
 	//jugadaExitosa indica si el usuario pudo hacer un movimiento con exito
 	int jugadaExitosa = -1;  //tiene que inicializarse con -1 para que la PC no haga un mov en caso de que el usuario presione una posicion invalida
-	int repitePC = 0;
+	int repiteOponente = 0;
 
 	char puntos_txt[40];
 
@@ -241,9 +239,11 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		y = (j-1)/2;
 
 		if(x != N){
-			jugadaExitosa = mov_usuario(tablero, x, y, 0);
+			p = 0;
+			jugadaExitosa = mov_usuario(tablero, x, y, p);
 		}else{
-			jugadaExitosa = mov_usuario(tablero, x-1, y, 1);
+			p = 1;
+			jugadaExitosa = mov_usuario(tablero, x-1, y, p);
 		}
 
 		if(jugadaExitosa != -1){
@@ -261,9 +261,11 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		x = (i-1)/2;
 
 		if(y != N){
-			jugadaExitosa = mov_usuario(tablero, x, y, 3);
+			p = 3;
+			jugadaExitosa = mov_usuario(tablero, x, y, p);
 		}else{
-			jugadaExitosa = mov_usuario(tablero, x, y-1, 2);
+			p = 2;
+			jugadaExitosa = mov_usuario(tablero, x, y-1, p);
 		}
 		if(jugadaExitosa != -1){
 			if(color == 0){
@@ -288,27 +290,40 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
+	} else {
+		cajasAbiertas -= jugadaExitosa;
+		if (modoJuego == 1) {
+			EnviarJugada (x, y, p);
+		}
 	}
 
 	sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
 	gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-	if(jugadaExitosa == 0)
+	if(jugadaExitosa == 0)  //solo si no hemos cerrado una caja le damos al rival la oportunidad de jugar en el siguiente turno
 	{
-		repitePC = JuegaPC(tablero);
-		cajasAbiertas -= repitePC;
-		sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
-		gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-		while(repitePC && cajasAbiertas!=0){
-			repitePC = JuegaPC(tablero);
-			cajasAbiertas -= repitePC;
+		if (modoJuego == 0) {
+			repiteOponente = JuegaPC(tablero);
+			cajasAbiertas -= repiteOponente;
 			sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
 			gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
+			while(repiteOponente && cajasAbiertas!=0){
+				repiteOponente = JuegaPC(tablero);
+				cajasAbiertas -= repiteOponente;
+				sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
+				gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
+			}
+		} else {
+			repiteOponente = JuegaOponente(tablero);
+			cajasAbiertas -= repiteOponente;
+			sprintf(puntos_txt, "PC local: %d  || PC rival: %d", puntos[1], puntos[0]);
+			gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
+			while(repiteOponente && cajasAbiertas!=0){
+				repiteOponente = JuegaOponente(tablero);
+				cajasAbiertas -= repiteOponente;
+				sprintf(puntos_txt, "PC local: %d  || PC rival: %d", puntos[1], puntos[0]);
+				gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
+			}
 		}
-
-	}
-	else if(jugadaExitosa != -1)
-	{
-		cajasAbiertas -= jugadaExitosa;
 	}
 
 	PrintBox(tablero);
@@ -365,9 +380,12 @@ GtkWidget *CrearTablero(){
 
 
 	//INICIALIAZAR VARIABLES USADAS EN LA LOGICA DEL JUEGO
-	//Inicializa puntajes
+	//Inicializa puntajes etc
 	puntos[0] = 0;
 	puntos[1] = 0;
+	cadenas[0]=100;
+	cajas2p = cajas3p = 0;
+	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 
 	//Creacion de TABLERO LOGICO
 	struct caja **tablero = TableroNuevo(N);
@@ -375,17 +393,14 @@ GtkWidget *CrearTablero(){
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
 
-	cajas2p = cajas3p = 0;
-	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
-
-	if(!turno){
-		JuegaPC(tablero);
+	if(turno == 0){
+		if (modoJuego == 0) JuegaPC(tablero);  //Human vs PC, empieza PC
+		if (modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
 	}
-
-	cadenas[0]=100;
 
 
 	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()
+
 
 	return eventbox;
 }
