@@ -64,6 +64,7 @@ int mov_usuario(struct caja **tablero, int i, int j, int p);
 int mov_pc(struct caja **tablero, int fila, int columna, int absRandom);
 int JuegaPC(struct caja **tablero);
 int JuegaOponente(struct caja **tablero);
+void EnviarJugada (int i, int j, int p);
 struct caja **TableroNuevo(int size);
 
 

@@ -21,6 +21,54 @@ enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas 
 
 int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio (utilizada por la IA)
 
+
+void GuardarEstadisticas (int result) {
+	FILE *stats;
+	char nameField[21], statsLine[30], statsJugador[30], **txt=NULL;
+	int wins, losses, draws, existeJugador=FALSE, contador=0;
+
+	// obtenemos los datos
+	stats = fopen ("stats.txt", "r");  //abre para lectura
+	while(feof(stats)==0){
+		fscanf (stats, "%s %d %d %d\n", nameField, &wins, &losses, &draws);
+		printf ("%s %d %d %d\n", nameField, wins, losses, draws);
+		if (strcmp (nameField, nombre1) == 0) {
+			puts("\nCOINCIDENCIA\n");
+			existeJugador = TRUE;
+			if (result == 1) wins++;
+			else if (result == -1) losses++;
+			else if (result == 0) draws++;
+			sprintf (statsJugador, "%s %d %d %d\n", nameField, wins, losses, draws);
+		} else {
+			sprintf (statsLine, "%s %d %d %d\n", nameField, wins, losses, draws);
+			contador++;
+			txt = (char *)realloc (txt, contador * sizeof (char *));
+			txt[contador] = statsLine;
+		}
+	}
+	fclose (stats);
+
+
+
+	stats = fopen ("stats.txt", "w");  //abre para escritura
+	for (int i=0; i<contador; i++) {
+		fprintf (stats, txt[i]);
+	}
+	if (existeJugador) {
+		fprintf (stats, statsJugador);
+	} else {
+		wins = losses = draws = 0;
+		if (result == 1) wins++;
+		else if (result == -1) losses++;
+		else if (result == 0) draws++;
+		sprintf (statsJugador, "%s %d %d %d\n", nombre1, wins, losses, draws);
+		fprintf (stats, statsJugador);
+	}
+	fclose (stats);
+
+}
+
+
 //Imprime el tablero en el terminal
 void PrintBox(struct caja **cajas){
 	printf("\n");
@@ -475,7 +523,7 @@ int JuegaPC(struct caja **tablero){
 }
 
 
-void EnviarJugada (int i, j, p) {
+void EnviarJugada (int i, int j, int p) {
 	int x1, y1, x2, y2;
 	char nombreArchLocal[30];
 	FILE *archLocal;
