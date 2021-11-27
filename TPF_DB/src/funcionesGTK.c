@@ -26,7 +26,7 @@ void PintarCaja(int x, int y){
 	int i = 2*x + 1;
 	int j = 2*y + 1;
 
-	if(color==0)
+	if(color==0)  //Si color==0, el rojo le corresponde al usuario, o en modo PC vs PC, a la PC local
 	{
 		if(turno == 1){
 			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/rojo.png");
@@ -95,7 +95,6 @@ void Salir(GtkWidget *widget, gpointer data){
 	}
 }
 
-
 void VolverAInicio(GtkWidget *widget, gpointer data){
 
 	GtkWidget *dialog;
@@ -125,17 +124,21 @@ void JuegoNuevo(GtkWidget *widget, gpointer data){
 void nombre(GtkWidget *widget, gpointer data){
 	nombre1 = gtk_entry_get_text (GTK_ENTRY(name_entry));
 
+	if (modoJuego == 1) {
+		//nombre2 = gtk_entry_get_text (GTK_ENTRY(name_entry));
+	}
 	printf("%s", nombre1);
 
 	gtk_label_set_label(GTK_LABEL(lbl_name), nombre1);
 }
 
 void QuienInicia(GtkWidget *widget, gpointer data){
+	//Por default inicia el usuario (o PC local en modo PC vs PC)
 	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
-	if(turno == -1){
+	if(turno == -1){  //lectura invalida
 		turno = 1;
 	}
-	if(turno == 2){
+	if(turno == 2){  //Aleatorio
 		srand(time(NULL));
 		turno = rand() % 2;
 	}
@@ -163,7 +166,6 @@ void DimMatriz(GtkWidget *widget, gpointer data){
 	}
 }
 
-
 void FinJuego(char *message) {
 	GtkWidget *dialog;
 	dialog = gtk_message_dialog_new(GTK_WINDOW(win_fin),
@@ -182,7 +184,6 @@ void FinJuego(char *message) {
 		gtk_widget_destroy(win_juego);
 	}
 }
-
 
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	/* Encargado de lo que pasa en la ventana del juego en si.
@@ -336,17 +337,19 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		//Mensajes fin de juego
 		printf("\n\n 		TERMINO EL JUEGO");
 		if (puntos[0] > puntos[1]){
+			GuardarEstadisticas(-1);
 			FinJuego("\nHa perdido con %d puntos contra %d puntos de la computadora.\nDesea volver a jugar?");
 		}else if(puntos[0] == puntos[1]){
+			GuardarEstadisticas(0);
 			FinJuego("\nEmpate. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}else{
+			GuardarEstadisticas(1);
 			FinJuego("\nGanaste. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}
 		gtk_widget_destroy(grid_tablero);
 	}
 
 }
-
 
 GtkWidget *CrearTablero(){
 	/* Crea el tablero grafico y da comienzo a la partida.
@@ -393,7 +396,9 @@ GtkWidget *CrearTablero(){
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
 
-	if(turno == 0){
+	modoJuego=0; //de momento
+
+	if(turno == 0){  //aca turno==0 dice si se eligio que el rival inicie la partida
 		if (modoJuego == 0) JuegaPC(tablero);  //Human vs PC, empieza PC
 		if (modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
 	}

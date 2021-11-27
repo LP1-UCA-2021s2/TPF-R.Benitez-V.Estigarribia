@@ -22,55 +22,88 @@ enum propiedades_pared {ABIERTA=0, CERRADA=1, PESO=2};  //Constantes simbolicas 
 int ultCoords[] = {0, 0};  //contiene las coordenadas de la ultima caja que se eligio (utilizada por la IA)
 
 
+void strCpy(char*to, char*from){
+	//funcion para copiar el texto de un array a otro asumiendo que hay memoria suficiente
+	int i=0;
+	while (i<strlen(from)){
+		to[i]=from[i];
+		i++;
+	}
+	to[i]='\0';
+}
+
+
+char *leer_linea(FILE *fp){
+    char *linea = NULL;
+    size_t n = 0;
+
+    getline(&linea,&n,fp);
+
+    return linea;
+}
+
+// result: 0=empate, 1=gano, -1=perdio
 void GuardarEstadisticas (int result) {
-	FILE *stats;
-	char nameField[21], statsLine[30], statsJugador[30], **txt=NULL;
-	int wins, losses, draws, existeJugador=FALSE, contador=0;
+	char aux[21], *nameField, **lineas = NULL;
+	int wins, losses, draws, existeJugador=FALSE, cont = 1, filaJugador=-1;
 
-	// obtenemos los datos
-	stats = fopen ("stats.txt", "r");  //abre para lectura
-	while(feof(stats)==0){
-		fscanf (stats, "%s %d %d %d\n", nameField, &wins, &losses, &draws);
-		printf ("%s %d %d %d\n", nameField, wins, losses, draws);
-		if (strcmp (nameField, nombre1) == 0) {
-			puts("\nCOINCIDENCIA\n");
-			existeJugador = TRUE;
-			if (result == 1) wins++;
-			else if (result == -1) losses++;
-			else if (result == 0) draws++;
-			sprintf (statsJugador, "%s %d %d %d\n", nameField, wins, losses, draws);
-		} else {
-			sprintf (statsLine, "%s %d %d %d\n", nameField, wins, losses, draws);
-			contador++;
-			txt = (char *)realloc (txt, contador * sizeof (char *));
-			txt[contador] = statsLine;
-		}
+    FILE *stats = fopen("estadisticas.txt","r");
+
+    /* Si existe el archivo y se pudo abrir, guarda las lineas del archivo
+     * en una matriz, si en alguna linea se encuentra nombre1, se guarda el nro. de fila
+     * y los datos de la fila entera*/
+	if (stats != NULL) {
+	    lineas = (char**)malloc(sizeof(char*));
+	    while(feof(stats)==0){
+	    	if (cont!=1)
+	    		lineas = (char**)realloc(lineas,(cont)*sizeof(char*));
+	        lineas[cont-1] = leer_linea(stats);  //lee linea
+
+	        strCpy(aux, lineas[cont-1]);
+	        nameField = strtok (aux, " ");  //obtiene el nombre
+	        if (strcmp (nameField, nombre1) == 0) {  //comprueba si coincide con el del jugador actual
+	        	existeJugador = TRUE;
+	        	filaJugador = cont-1;  //se guarda el nro. de fila
+
+	        	//se guardan las estadisticas en las variables correspondientes
+	        	wins = atoi(strtok (NULL, " "));
+	        	losses = atoi(strtok (NULL, " "));
+	        	draws = atoi(strtok (NULL, " "));
+	        }
+	        cont++;
+	    }
+	    fclose(stats);
 	}
-	fclose (stats);
+	cont--;
 
 
+    for (int i=0;i < cont;i++){
+    	printf("%s",lineas[i]);
+    }
 
-	stats = fopen ("stats.txt", "w");  //abre para escritura
-	for (int i=0; i<contador; i++) {
-		fprintf (stats, txt[i]);
+	stats = fopen ("estadisticas.txt", "w");  //abre para escritura
+	//escribe las lineas que no sean del jugador
+	for (int i=0; i < cont; i++) {
+		if (i != filaJugador && *lineas[i] != '\n')
+			fprintf (stats,"%s",lineas[i]);
+		free (lineas[i]);
 	}
-	if (existeJugador) {
-		fprintf (stats, statsJugador);
-	} else {
+	if (lineas!=NULL) free (lineas);
+
+	if (!existeJugador) {
 		wins = losses = draws = 0;
-		if (result == 1) wins++;
-		else if (result == -1) losses++;
-		else if (result == 0) draws++;
-		sprintf (statsJugador, "%s %d %d %d\n", nombre1, wins, losses, draws);
-		fprintf (stats, statsJugador);
 	}
-	fclose (stats);
+	if (result == 1) wins++;
+	else if (result == -1) losses++;
+	else if (result == 0) draws++;
+	fprintf (stats, "\n%s %d %d %d", nombre1, wins, losses, draws);  //escribe los datos del jugador
 
+	fclose (stats);
 }
 
 
 //Imprime el tablero en el terminal
-void PrintBox(struct caja **cajas){
+void PrintBox (struct caja **cajas) {
 	printf("\n");
     for(int i=0; i < N; i++){
         printf("+");
@@ -112,6 +145,7 @@ void ActualizarPeso(struct caja **caja, int x, int y){
 	/* Si la caja en (x,y) tiene pCerradas==2 se llama esta funcion
 	 * que a cada caja adyacente le suma un PESO en la pared correspondiente
 	 * (la pared 'pegada' a caja[x][y])
+	 *
 	 */
 
 	if(x-1 >= 0){  //caja de arriba
@@ -143,6 +177,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	 * - ultCoords[]
 	 * - caja->pCerradas
 	 * - caja->peso (llamando a ActualiarPeso)
+	 * - cadenas->caja.id_cadena (cuando se cierra una caja, se la excluye de la cadena)
 	 */
 	int cajasCerradas = 0;
 
@@ -254,6 +289,7 @@ int AgregarPared(struct caja **tablero,int x, int y, int p){
 	return cajasCerradas;
 }
 
+
 //Controla que las paredes no esten cerradas [0, 1]
 int pared_check(struct caja **tablero, int x, int y, int p){
 	switch(p){
@@ -283,7 +319,11 @@ int pared_check(struct caja **tablero, int x, int y, int p){
 
 
 int Concatenar (struct caja **tablero, int x, int y, int id, int longitud) {
-
+	/* Incluye a la caja(x,y) en una cadena asignandole el id correspondiente,
+	 * se hace lo mismo con cada caja adyacente hasta que todas tengan un id!=0
+	 * Con cada caja recorrida por esta funcion, se suma 1 a la longitud de la cadena
+	 * lo cual resulta en la longitud total, que se guarda en cadenas[id] (fuera de la funcion)
+	 */
 	tablero[x][y].id_cadena = id;
 
 	if (tablero[x][y].ARRIBA%2 == ABIERTA) {
@@ -320,10 +360,12 @@ int Concatenar (struct caja **tablero, int x, int y, int id, int longitud) {
 
 
 void BuscarCadenas (struct caja **tablero) {
+	/*Recorre la matriz completa, con cada caja que no tenga id_cadena, se llama
+	 * a la funcion Concatenar() y se guarda la longitud de la cadena formada*/
 	int long_cadena, id_cadena = 1;
 	for (int i=0; i<N; i++) {
 		for (int j=0; j<N; j++) {
-			if (tablero[i][j].id_cadena == 0 && tablero[i][j].pCerradas != 4){
+			if (tablero[i][j].id_cadena == 0 && tablero[i][j].pCerradas != 4) {
 				long_cadena = Concatenar (tablero, i, j, id_cadena, 0);
 				cadenas[id_cadena++] = long_cadena;
 			}
@@ -337,7 +379,7 @@ void BuscarCadenas (struct caja **tablero) {
 //Juega el humano, retorna la cantidad de cajas cerradas en un movimiento o -1 si no logro realizarse una jugada valida
 int mov_usuario(struct caja **tablero, int i, int j, int p){
 
-	turno = 1;
+	turno = 1;  // para que PintarCaja() sepa el turno de quien es
 
 	//Pedir pared a cerrar
 	if(pared_check(tablero, i, j, p)==0){		//La pared seleccionada esta cerrada
@@ -356,9 +398,9 @@ int mov_usuario(struct caja **tablero, int i, int j, int p){
 
 	//Suma los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
-		puntos[1] += 10 * cajasCerradas;
+		puntos[turno] += 10 * cajasCerradas;
 		printf("\nHas cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
-		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[1]);
+		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[turno]);
 	}
 
 
@@ -368,27 +410,22 @@ int mov_usuario(struct caja **tablero, int i, int j, int p){
 
 
 //Movimiento de la pc (random o con condiciones extra), retorna la cantidad de cajas cerradas en un movimiento
-int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
-	/* Hace un movimiento en una caja random o en la fila y columna indicadas.
+int mov_pc(struct caja **tablero, int fila, int columna, int bueno){
+	/* Hace un movimiento en una caja random o en la fila y columna indicadas (si cumple las condiciones)
 	 *
-	 * Mov random:
-	 * - Si absRandom==True, hace un movimiento absolutamente random.
-	 * - De lo contrario elige una caja random que ademas sea una caja conveniente (tenga pCerradas!=2) o
-	 * busca una con pCerradas==3 si cajas3p!=0
+	 *La variable 'bueno' indica que serie de condiciones se aplican en la busqueda de la caja
+	 * - Si bueno==0 busca cajas a cerrar si las hay (cajas3p), o cajas con pCerradas!=2
+	 * - Si bueno==1, hace un movimiento absolutamente random.
+	 * - Si bueno==2, elige cualquier caja perteneciente a la cadena mas corta del tablero
+	 *
+	 * Despues de efectuar el movimiento, se suman los puntos al jugador que corresponde
 	 */
 
 	srand(time(NULL));
 	int cajasCerradas, pared;
 
-	//Si en (fila, columna) no hay una caja valida, se buscan coordenadas random hasta encontrar una.
-	if(absRandom == 1)
-	{
-		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
-			fila = rand()% N;
-			columna = rand()% N;
-		}
-	}
-	else if (absRandom == 0) //Mov random con condiciones extra
+
+	if (bueno == 0) //Mov random con condiciones extra
 	{
 		if(cajas3p){
 			while( tablero[fila][columna].pCerradas==4 || tablero[fila][columna].pCerradas!=3 ){
@@ -402,7 +439,14 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 			}
 		}
 	}
-	else if (absRandom == 2)
+	else if(bueno == 1)
+	{
+		while(tablero[fila][columna].pCerradas == 4){  //absolutamente random
+			fila = rand()% N;
+			columna = rand()% N;
+		}
+	}
+	else if (bueno == 2)
 	{
 		puts("\n\n\tELIGIENDO CAJA DE CADENA");
 		int j, aux = 100;
@@ -423,7 +467,8 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 
 
 	pared = rand()% 4;  //si no es con random va a elegir un solo valor para la mayoria de las jugadas
-	int pesoPared;
+	int pesoPared;  //var auxiliar para guardar el peso
+	//pesoPared es inicialmente el peso de la pared elegida aleatoriamente
 	if (pared==0){
 		pesoPared = tablero[fila][columna].ARRIBA;
 	}else if(pared==1){
@@ -434,9 +479,10 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 		pesoPared = tablero[fila][columna].IZQ;
 	}
 
-	if (pesoPared == 1){
-		pesoPared = 4;  //si la pared elegida aleatoriamente esta cerrada (valor 1) se le asigna un valor alto a pesoPared para que si o si entre en algun if abajo
-	}
+	if (pesoPared == 1)	//si la pared elegida aleatoriamente esta cerrada (valor 1) se le asigna un valor alto a
+		pesoPared = 4;  	//pesoPared para que si o si entre en algun if abajo
+
+	// Con los (if) de abajo nos aseguramos de elegir la pared con el menor peso en la caja
 	if (tablero[fila][columna].ARRIBA<pesoPared && tablero[fila][columna].ARRIBA!=1){
 		pared = 0;
 		pesoPared = tablero[fila][columna].ARRIBA;
@@ -462,9 +508,9 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom){
 
 	//Se suman los puntos acorde a la cant de cajas cerradas
 	if (cajasCerradas){
-		puntos[0] += 10 * cajasCerradas;
+		puntos[turno] += 10 * cajasCerradas;
 		printf("\nLa PC ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
-		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[0]);
+		printf("\n	PC gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[turno]);
 	}
 
 	AgregarLinea(fila, columna, pared);
@@ -487,7 +533,8 @@ int JuegaPC(struct caja **tablero){
 	 * 		cajasCerradas: cantidad de cajas cerradas en una jugada
 	 */
 
-	turno = 0;
+	if (modoJuego == 0) turno = 0; // para que PintarCaja() sepa el turno de quien es (y por tanto que imagen poner)
+	else turno = 1;
 
 	srand(time(NULL));
 	int fila, columna, cajasCerradas;
@@ -495,14 +542,14 @@ int JuegaPC(struct caja **tablero){
 	columna = ultCoords[1];
 
 	if (cajas2p == N*N && cadenas[0] != -1) {
-		for (int i=0; i<100; i++) {
+		for (int i=0; i<100; i++) {  //inicializa los valores del array
 			cadenas[i] = 100;
 		}
 		BuscarCadenas(tablero);
 	}
 
 	if (cajas2p == N*N && !cajas3p) {
-		cajasCerradas = mov_pc(tablero, fila, columna, 2);
+		cajasCerradas = mov_pc(tablero, fila, columna, 2);  //hace un movimiento buscando la cadena mas corta
 	}
 
 	//Mov random si es la primera jugada
@@ -524,6 +571,7 @@ int JuegaPC(struct caja **tablero){
 
 
 void EnviarJugada (int i, int j, int p) {
+	//envia la jugada realizada (para pc vs pc)
 	int x1, y1, x2, y2;
 	char nombreArchLocal[30];
 	FILE *archLocal;
@@ -563,6 +611,8 @@ void EnviarJugada (int i, int j, int p) {
 
 //PCvsPC
 int JuegaOponente(struct caja **tablero){
+
+	turno = 0;
 
 	int x1, y1, x2, y2, i, j, p, cajasCerradas;
 
@@ -613,9 +663,9 @@ int JuegaOponente(struct caja **tablero){
 
 	cajasCerradas = AgregarPared (tablero, i, j, p);
 	if (cajasCerradas){
-		puntos[1] += 10 * cajasCerradas;
+		puntos[turno] += 10 * cajasCerradas;
 		printf("\nLa PC rival ha cerrado %d caja%s", cajasCerradas, (cajasCerradas==2)?"s":"");
-		printf("\n	PC rival gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[1]);
+		printf("\n	PC rival gano %d puntos. Ahora tiene %d puntos.", 10*cajasCerradas, puntos[turno]);
 	}
 
 	AgregarLinea(i, j, p);

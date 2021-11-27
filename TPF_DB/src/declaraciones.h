@@ -6,10 +6,12 @@
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
 
 /*cadenas: el index del array corresponde al identificador de la cadena, y el valor contenido es la long de la cadena, cadena[0] siempre se ignora
- porque el 0 se usa para indicar que una caja no pertenece a una cadena*/
+ porque el 0 se usa para indicar que una caja no pertenece a una cadena.
+ Todas las posiciones se inicializan en 100 para poder buscar el menor valor
+ */
 int cadenas[100];
 
-// si el turno==0, juega el rival, si modoJuego==0, se juega Human vs PC
+// Si el turno==0, juega el oponente (IA o PC rival). Si modoJuego==0, se juega Human vs PC
 int turno, color, cajasAbiertas, modoJuego;
 
 
@@ -24,7 +26,7 @@ struct caja {
 	 * El peso de una caja indica cuantas cajas alrededor suyo tienen pCerradas=2
 	 * 		- Cada caja ady que cumpla esa condicion le agrega un peso=2
 	 * 		- La pared pegada a dicha caja tambien adquiere PESO
-	 * 		- Por tanto  0 <= peso <= 8
+	 * 		- Por tanto  0 <= peso <= 8 para cada caja
 	 *
 	 *
 	 * Como saber si una caja esta 'abierta' o 'cerrada' independientemente de su peso?
@@ -65,6 +67,7 @@ int mov_pc(struct caja **tablero, int fila, int columna, int absRandom);
 int JuegaPC(struct caja **tablero);
 int JuegaOponente(struct caja **tablero);
 void EnviarJugada (int i, int j, int p);
+void GuardarEstadisticas (int result);
 struct caja **TableroNuevo(int size);
 
 
