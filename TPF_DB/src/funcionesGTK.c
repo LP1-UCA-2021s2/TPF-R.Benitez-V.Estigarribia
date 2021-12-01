@@ -22,6 +22,245 @@
 char *imagenes[] = {"./IMG/circ.png","./IMG/blanco.png"};
 
 
+void mostrar_acerca(GtkWidget *widget, gpointer data) {
+	gtk_dialog_run(GTK_DIALOG(dialogAcerca) );// mostramos la ventana de diálogo
+	gtk_widget_hide(GTK_WIDGET(dialogAcerca) );	// escondemos la ventana
+}
+
+void mostrar_ayuda(GtkWidget *widget, gpointer data) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new (GTK_WINDOW(win_entrada),
+			GTK_DIALOG_MODAL,
+			GTK_MESSAGE_INFO,
+			GTK_BUTTONS_OK,
+			"Descripción\n"
+			"El juego comienza con una cuadrícula vacía de puntos. La cuadrícula puede ser de cualquier tamaño."
+			"Los jugadores se turnan para conectar 2 puntos adyacentes horizontal, vertical o diagonalmente separados."
+			"Un jugador que completa el cuarto lado de un cuadro 1x1 gana 10 puntos y debe tomar otro turno."
+			"El juego termina cuando se dibujan todas las líneas y se reclaman las casillas."
+			"El jugador con más puntos gana. Si más de un jugador tiene la misma puntuación alta, el juego es un empate.");
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+		gtk_widget_destroy(dialog);
+	}
+}
+
+void JuegoNuevo(GtkWidget *widget, gpointer data){
+	N = 0;  //para saber si el usuario ingreso o no el tamanho del tablero
+	gtk_widget_show_all(win_modo_juego);
+	gtk_widget_hide(win_entrada);
+}
+
+void ShowStats (GtkWidget *widget, gpointer data) {
+	FILE *stats;
+	GtkWidget *dialog;
+	char *txt=NULL, buff[100];
+
+	stats = fopen ("estadisticas.txt", "r");
+	if (stats == NULL)
+	{
+		dialog = gtk_message_dialog_new(GTK_WINDOW(win_entrada),
+					GTK_DIALOG_MODAL,
+					GTK_MESSAGE_INFO,
+					GTK_BUTTONS_OK,
+					"Sin datos que mostrar");
+		gtk_window_set_title(GTK_WINDOW(dialog), "ESTADISTICAS");
+		if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
+				gtk_widget_destroy(dialog);
+		}
+	}
+	else
+	{
+		int txtlen=1;
+		txt = (char*)malloc(sizeof(char));
+		txt[0]='\0';
+		while (fgets (buff, 100, stats)!=NULL){
+			printf ("\n==================================\nbuff:\n%s\n", buff);
+			txtlen += strlen (buff);
+			txt = (char *)realloc(txt, txtlen*sizeof(char));
+			strcat (txt, buff);
+			printf ("\n-----------------------------------\ntxt:\n%s\n\n", txt);
+		}
+		fclose (stats);
+
+		GtkWidget *window;
+		GtkWidget *view;
+		GtkWidget *vbox;
+		GtkWidget *scrolledwindow;
+		GtkTextBuffer *buffer;
+		GtkTextIter iter;
+
+		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+		gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
+		gtk_window_set_title(GTK_WINDOW(window), "Estadisticas");
+
+		vbox = gtk_box_new(FALSE, 0);
+		scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
+		view = gtk_text_view_new();
+		gtk_box_pack_start(GTK_BOX(vbox), view, TRUE, TRUE, 0);
+
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
+
+		gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+
+		gtk_text_buffer_insert(buffer, &iter, txt, -1);
+		 gtk_container_add(GTK_CONTAINER(scrolledwindow),vbox);
+		gtk_container_add(GTK_CONTAINER(window),scrolledwindow);
+
+		gtk_widget_show_all(window);
+		free (txt);
+	}
+}
+
+void Salir(GtkWidget *widget, gpointer data){
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_salir),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro que desea abandonar el juego?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_entrada);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
+
+void ModoUSRvsPC(GtkWidget *widget, gpointer data) {
+
+	modoJuego = 0;
+
+	/* Obtencion de nombres. Si fueron ingresados muestra la sgte ventana, si no, muestra un error*/
+	nombre1 = gtk_entry_get_text (GTK_ENTRY(name_entry1));
+	nombre2 = gtk_entry_get_text (GTK_ENTRY(name_entry2));
+
+	if (nombre1[0] == '\0' || nombre2[0] == '\0') {
+		GtkWidget *dialog;
+		dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
+						GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_MESSAGE_WARNING,
+						GTK_BUTTONS_OK,
+						"Error, complete los campos.");
+				gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+				gtk_dialog_run(GTK_DIALOG(dialog));
+				gtk_widget_destroy(dialog);
+	} else {
+		gtk_widget_show_all (win_principal);
+		gtk_widget_hide (win_modo_juego);
+	}
+}
+
+
+void ModoPCvsPC(GtkWidget *widget, gpointer data) {
+
+	modoJuego = 1;
+
+	/* Obtencion de nombres. Si fueron ingresados muestra la sgte ventana, si no, muestra un error*/
+	nombre1 = gtk_entry_get_text (GTK_ENTRY(name_entry1));
+	nombre2 = gtk_entry_get_text (GTK_ENTRY(name_entry2));
+
+	if (nombre1[0] == '\0' || nombre2[0] == '\0') {
+		GtkWidget *dialog;
+		dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
+						GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_MESSAGE_WARNING,
+						GTK_BUTTONS_OK,
+						"Error, complete los campos.");
+				gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+				gtk_dialog_run(GTK_DIALOG(dialog));
+				gtk_widget_destroy(dialog);
+	} else {
+		gtk_widget_show_all (win_principal);
+		gtk_widget_hide (win_modo_juego);
+	}
+}
+
+void VolverAInicio(GtkWidget *widget, gpointer data){
+
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_yes_no),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro que desea volver?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_entrada);
+		gtk_widget_hide(win_modo_juego);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
+void VolverAModoJuego (GtkWidget *widget, gpointer data) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_yes_no),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_YES_NO,
+				"¿Seguro que desea volver?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_modo_juego);
+		gtk_widget_hide(win_principal);
+	}else{
+		gtk_widget_destroy(dialog);
+	}
+}
+
+void QuienInicia(GtkWidget *widget, gpointer data){
+	//Por default inicia el usuario (o PC local en modo PC vs PC)
+	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+	if(turno == -1){  //lectura invalida
+		turno = 1;
+	}
+	if(turno == 2){  //Aleatorio
+		srand(time(NULL));
+		turno = rand() % 2;
+	}
+}
+
+void Color(GtkWidget *widget, gpointer data){
+	color = gtk_combo_box_get_active(GTK_COMBO_BOX(colour));
+	printf("\ncolor %d", color);
+	if(color == -1){
+		color = 0;  //rojo default
+	}
+	if(color == 2){
+		srand(time(NULL));
+		color = rand() % 2;
+	}
+}
+
+void FinJuego(char *message) {
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win_fin),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO,
+			message, puntos[1], puntos[0]);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Fin del juego");
+
+	if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
+		gtk_widget_destroy(dialog);
+		gtk_widget_show_all(win_principal);
+
+		gtk_widget_destroy(grid_tablero);
+		gtk_widget_hide(win_juego);
+	}else{
+		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(win_juego);
+	}
+}
+
 void PintarCaja(int x, int y){
 	int i = 2*x + 1;
 	int j = 2*y + 1;
@@ -78,113 +317,6 @@ void AgregarLinea(int x, int y, int p){
 
 }
 
-void Salir(GtkWidget *widget, gpointer data){
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(win_salir),
-				GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_QUESTION,
-				GTK_BUTTONS_YES_NO,
-				"¿Seguro que desea abandonar el juego?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
-
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
-		gtk_widget_destroy(dialog);
-		gtk_widget_destroy(win_entrada);
-	}else{
-		gtk_widget_destroy(dialog);
-	}
-}
-
-void VolverAInicio(GtkWidget *widget, gpointer data){
-
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(win_yes_no),
-				GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_QUESTION,
-				GTK_BUTTONS_YES_NO,
-				"¿Seguro que desea volver?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "ATENCION");
-
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES){
-		gtk_widget_destroy(dialog);
-		gtk_widget_show_all(win_entrada);
-		gtk_widget_hide(win_principal);
-	}else{
-		gtk_widget_destroy(dialog);
-	}
-}
-
-void JuegoNuevo(GtkWidget *widget, gpointer data){
-	N = 0;  //para saber si el usuario ingreso o no el tamanho del tablero
-	gtk_widget_show_all(win_principal);
-	gtk_widget_hide(win_entrada);
-}
-
-//Pide el nombre del usuario
-void nombre(GtkWidget *widget, gpointer data){
-	nombre1 = gtk_entry_get_text (GTK_ENTRY(name_entry));
-
-	if (modoJuego == 1) {
-		//nombre2 = gtk_entry_get_text (GTK_ENTRY(name_entry));
-	}
-	printf("%s", nombre1);
-
-	gtk_label_set_label(GTK_LABEL(lbl_name), nombre1);
-}
-
-void QuienInicia(GtkWidget *widget, gpointer data){
-	//Por default inicia el usuario (o PC local en modo PC vs PC)
-	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
-	if(turno == -1){  //lectura invalida
-		turno = 1;
-	}
-	if(turno == 2){  //Aleatorio
-		srand(time(NULL));
-		turno = rand() % 2;
-	}
-}
-
-void Color(GtkWidget *widget, gpointer data){
-	color = gtk_combo_box_get_active(GTK_COMBO_BOX(colour));
-	if(color == -1){
-		color = 0;  //rojo default
-	}
-	if(color == 2){
-		srand(time(NULL));
-		color = rand() % 2;
-	}
-}
-
-//Dimension de la matriz, default = 3
-void DimMatriz(GtkWidget *widget, gpointer data){
-	const gchar *dimension = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
-	int dim = atoi(dimension);
-	if(dim < 3 || dim > 15){
-		N = 2;
-	}else{
-		N = dim-1;
-	}
-}
-
-void FinJuego(char *message) {
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(win_fin),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO,
-			message, puntos[1], puntos[0]);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Fin del juego");
-
-	if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
-		gtk_widget_destroy(dialog);
-		gtk_widget_show_all(win_principal);
-		gtk_widget_hide(win_juego);
-	}else{
-		gtk_widget_destroy(dialog);
-		gtk_widget_destroy(win_juego);
-	}
-}
-
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	/* Encargado de lo que pasa en la ventana del juego en si.
 	 *
@@ -200,9 +332,9 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 
 	char puntos_txt[40];
 
-
 	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
 	j = (GUINT_FROM_LE(event->x) / 50);
+
 
 	struct caja **tablero = data;
 
@@ -293,37 +425,25 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		gtk_widget_destroy(dialog);
 	} else {
 		cajasAbiertas -= jugadaExitosa;
-		if (modoJuego == 1) {
-			EnviarJugada (x, y, p);
-		}
+//		if (*modoJuego == 1) {
+//			EnviarJugada (x, y, p);
+//		}
 	}
 
 	sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
 	gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
 	if(jugadaExitosa == 0)  //solo si no hemos cerrado una caja le damos al rival la oportunidad de jugar en el siguiente turno
 	{
-		if (modoJuego == 0) {
+
+		repiteOponente = JuegaPC(tablero);
+		cajasAbiertas -= repiteOponente;
+		sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
+		gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
+		while(repiteOponente && cajasAbiertas!=0){
 			repiteOponente = JuegaPC(tablero);
 			cajasAbiertas -= repiteOponente;
 			sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
 			gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-			while(repiteOponente && cajasAbiertas!=0){
-				repiteOponente = JuegaPC(tablero);
-				cajasAbiertas -= repiteOponente;
-				sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
-				gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-			}
-		} else {
-			repiteOponente = JuegaOponente(tablero);
-			cajasAbiertas -= repiteOponente;
-			sprintf(puntos_txt, "PC local: %d  || PC rival: %d", puntos[1], puntos[0]);
-			gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-			while(repiteOponente && cajasAbiertas!=0){
-				repiteOponente = JuegaOponente(tablero);
-				cajasAbiertas -= repiteOponente;
-				sprintf(puntos_txt, "PC local: %d  || PC rival: %d", puntos[1], puntos[0]);
-				gtk_label_set_label(GTK_LABEL(lbl_puntos), puntos_txt);
-			}
 		}
 	}
 
@@ -332,7 +452,10 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 
 
 	if(cajasAbiertas==0){
-		free(tablero);
+		for (i = 0; i < N; i++) {
+			free (tablero[i]);
+		}
+		free (tablero);
 		gtk_label_set_label(GTK_LABEL(lbl_puntos), "Puntos");
 		//Mensajes fin de juego
 		printf("\n\n 		TERMINO EL JUEGO");
@@ -346,12 +469,10 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 			GuardarEstadisticas(1);
 			FinJuego("\nGanaste. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
 		}
-		gtk_widget_destroy(grid_tablero);
 	}
-
 }
 
-GtkWidget *CrearTablero(){
+GtkWidget *CrearTablero(struct caja **tablero){
 	/* Crea el tablero grafico y da comienzo a la partida.
 	 *
 	 * - Retorna el EventBox de la pantalla de juego a IniciarPartida()
@@ -390,17 +511,9 @@ GtkWidget *CrearTablero(){
 	cajas2p = cajas3p = 0;
 	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 
-	//Creacion de TABLERO LOGICO
-	struct caja **tablero = TableroNuevo(N);
-	InitBoxes(tablero);
-	PrintBox(tablero);
-	puts("\n\n=================================================================\n\n");
-
-	modoJuego=0; //de momento
-
 	if(turno == 0){  //aca turno==0 dice si se eligio que el rival inicie la partida
-		if (modoJuego == 0) JuegaPC(tablero);  //Human vs PC, empieza PC
-		if (modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
+		JuegaPC(tablero);  //Human vs PC, empieza PC
+		//if (*modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
 	}
 
 
@@ -410,37 +523,30 @@ GtkWidget *CrearTablero(){
 	return eventbox;
 }
 
-void mostrar_acerca(GtkWidget *widget, gpointer data) {
-	gtk_dialog_run(GTK_DIALOG(dialogAcerca) );// mostramos la ventana de diálogo
-	gtk_widget_hide(GTK_WIDGET(dialogAcerca) );	// escondemos la ventana
-}
-
-void mostrar_ayuda(GtkWidget *widget, gpointer data) {
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new (GTK_WINDOW(win_entrada),
-			GTK_DIALOG_MODAL,
-			GTK_MESSAGE_INFO,
-			GTK_BUTTONS_OK,
-			"Descripción\n"
-			"El juego comienza con una cuadrícula vacía de puntos. La cuadrícula puede ser de cualquier tamaño."
-			"Los jugadores se turnan para conectar 2 puntos adyacentes horizontal, vertical o diagonalmente separados."
-			"Un jugador que completa el cuarto lado de un cuadro 1x1 gana 10 puntos y debe tomar otro turno."
-			"El juego termina cuando se dibujan todas las líneas y se reclaman las casillas."
-			"El jugador con más puntos gana. Si más de un jugador tiene la misma puntuación alta, el juego es un empate.");
-	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK){
-		gtk_widget_destroy(dialog);
-	}
-}
 
 //Muestra la pantalla de juego
 void IniciarPartida(GtkWidget *widget, gpointer data){
-	if(N==0){  //si no se ingreso el tamanho, se comienza con un tablero de 3x3 (N=2)
+
+	dim_matriz = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
+
+	if (dim_matriz[0] == '\0') {
 		N = 2;
+	} else {
+		N = atoi (dim_matriz);
 	}
 
-	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero_j"));
-	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(), TRUE, FALSE, 20);  //crea el box del tablero
 
+	gtk_label_set_label(GTK_LABEL(lbl_name), nombre1);
+
+	//Creacion de TABLERO LOGICO
+	struct caja **tablero = TableroNuevo(N);
+	InitBoxes(tablero);
+	PrintBox(tablero);
+	puts("\n\n=================================================================\n\n");
+
+	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero_j"));
+	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(tablero), TRUE, FALSE, 20);  //crea el box del tablero
 	gtk_widget_show_all(win_juego);
 	gtk_widget_hide(win_principal);
+
 }

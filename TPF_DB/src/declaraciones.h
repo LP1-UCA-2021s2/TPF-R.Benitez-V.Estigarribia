@@ -2,6 +2,8 @@
 #ifndef DECLARACIONES_H_
 #define DECLARACIONES_H_
 
+#define PCvsPC (1)
+#define USRvsPC (0)
 
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
 
@@ -13,7 +15,6 @@ int cadenas[100];
 
 // Si el turno==0, juega el oponente (IA o PC rival). Si modoJuego==0, se juega Human vs PC
 int turno, color, cajasAbiertas, modoJuego;
-
 
 struct caja {
 	/* Una pared (ARRIBA, ABAJO, IZQ o DER) puede indicar informacion con 4 valores distintos:

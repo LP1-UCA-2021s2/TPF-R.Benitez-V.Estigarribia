@@ -44,8 +44,8 @@ char *leer_linea(FILE *fp){
 
 // result: 0=empate, 1=gano, -1=perdio
 void GuardarEstadisticas (int result) {
-	char aux[21], *nameField, **lineas = NULL;
-	int wins, losses, draws, existeJugador=FALSE, cont = 1, filaJugador=-1;
+	char aux[100], *nameField, **lineas = NULL;
+	int wins, losses, draws, games, existeJugador=FALSE, cont = 1, filaJugador=-1;
 
     FILE *stats = fopen("estadisticas.txt","r");
 
@@ -69,6 +69,7 @@ void GuardarEstadisticas (int result) {
 	        	wins = atoi(strtok (NULL, " "));
 	        	losses = atoi(strtok (NULL, " "));
 	        	draws = atoi(strtok (NULL, " "));
+	        	games = atoi(strtok (NULL, " "));
 	        }
 	        cont++;
 	    }
@@ -77,12 +78,16 @@ void GuardarEstadisticas (int result) {
 	cont--;
 
 
+	puts("\n\n\tEstadisticas:");
     for (int i=0;i < cont;i++){
     	printf("%s",lineas[i]);
     }
 
 	stats = fopen ("estadisticas.txt", "w");  //abre para escritura
 	//escribe las lineas que no sean del jugador
+	if (cont == 0) {
+		fprintf (stats, "\n\tNombre\tG\tP\tE\tNo.");  //agrega la cabecera
+	}
 	for (int i=0; i < cont; i++) {
 		if (i != filaJugador && *lineas[i] != '\n')
 			fprintf (stats,"%s",lineas[i]);
@@ -91,12 +96,13 @@ void GuardarEstadisticas (int result) {
 	if (lineas!=NULL) free (lineas);
 
 	if (!existeJugador) {
-		wins = losses = draws = 0;
+		wins = losses = draws = games = 0;
 	}
 	if (result == 1) wins++;
 	else if (result == -1) losses++;
 	else if (result == 0) draws++;
-	fprintf (stats, "\n%s %d %d %d", nombre1, wins, losses, draws);  //escribe los datos del jugador
+	games++;
+	fprintf (stats, "\n%20s %10d %7d %7d %7d", nombre1, wins, losses, draws, games);  //escribe los datos del jugador
 
 	fclose (stats);
 }
@@ -533,8 +539,7 @@ int JuegaPC(struct caja **tablero){
 	 * 		cajasCerradas: cantidad de cajas cerradas en una jugada
 	 */
 
-	if (modoJuego == 0) turno = 0; // para que PintarCaja() sepa el turno de quien es (y por tanto que imagen poner)
-	else turno = 1;
+	turno = 0; // para que PintarCaja() sepa el turno de quien es (y por tanto que imagen poner)
 
 	srand(time(NULL));
 	int fila, columna, cajasCerradas;
