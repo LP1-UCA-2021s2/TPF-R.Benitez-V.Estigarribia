@@ -409,9 +409,9 @@ int mov_usuario(struct caja **tablero, int i, int j, int p){
 		printf("\n	Se te han sumado %d puntos. Tienes %d puntos.", 10*cajasCerradas, puntos[turno]);
 	}
 
+	AgregarLinea (i, j, p);
 
 	return cajasCerradas;
-
 }
 
 
@@ -521,6 +521,10 @@ int mov_pc(struct caja **tablero, int fila, int columna, int bueno){
 
 	AgregarLinea(fila, columna, pared);
 
+	if (modoJuego == 1) {
+		EnviarJugada (fila, columna, pared);
+	}
+
 
 	return cajasCerradas;
 }
@@ -617,7 +621,7 @@ void EnviarJugada (int i, int j, int p) {
 //PCvsPC
 int JuegaOponente(struct caja **tablero){
 
-	turno = 0;
+	turno = 1;
 
 	int x1, y1, x2, y2, i, j, p, cajasCerradas;
 
@@ -665,6 +669,9 @@ int JuegaOponente(struct caja **tablero){
 			j = y1 -1;
 		}
 	}
+
+	ultCoords[0] = i;
+	ultCoords[1] = j;
 
 	cajasCerradas = AgregarPared (tablero, i, j, p);
 	if (cajasCerradas){

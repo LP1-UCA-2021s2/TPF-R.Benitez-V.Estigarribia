@@ -45,7 +45,6 @@ void mostrar_ayuda(GtkWidget *widget, gpointer data) {
 }
 
 void JuegoNuevo(GtkWidget *widget, gpointer data){
-	N = 0;  //para saber si el usuario ingreso o no el tamanho del tablero
 	gtk_widget_show_all(win_modo_juego);
 	gtk_widget_hide(win_entrada);
 }
@@ -286,36 +285,90 @@ void PintarCaja(int x, int y){
 void AgregarLinea(int x, int y, int p){
 	int i, j;
 
-	if(p==0 || p==1){  //Linea horizontal
-
+	if(p==0 || p==1)  //Linea horizontal
+	{
 		i = 2*x;
 		if(p==1){
 			i += 2;
 		}
 		j = 2*y + 1;
-		if(color == 0){
-			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
-		}else{
-			gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+
+		if (turno == 0) {
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+			}
+		} else {
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
+			}
 		}
-
 	}
-	if(p==2 || p==3){  //Linea vertical
-
+	else if (p==2 || p==3) //Linea vertical
+	{
 		j = 2*y;
 		if(p==2){
 			j += 2;
 		}
 		i = 2*x + 1;
 
-		if(color == 0){
+		if (turno == 0) {
+			if(color == 0){
 				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
 			}else{
 				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
 			}
+		} else {
+			if(color == 0){
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
+			}else{
+				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
+			}
+		}
+	}
+}
+
+
+void PCvsPC (GtkWidget *object, GdkEventButton *event, gpointer data) {
+	struct caja **tablero = data;
+	int repiteTurno;
+	repiteTurno = JuegaPC (tablero);
+	cajasAbiertas -= repiteTurno;
+	PrintBox(tablero);
+
+	if (!repiteTurno) {
+		repiteTurno = JuegaOponente (tablero);
+		cajasAbiertas -= repiteTurno;
+		PrintBox(tablero);
+		while (repiteTurno && cajasAbiertas) {
+			repiteTurno = JuegaOponente (tablero);
+			cajasAbiertas -= repiteTurno;
+			PrintBox(tablero);
+		}
 	}
 
+
+	if (!cajasAbiertas) {
+		free(tablero);
+		gtk_label_set_label(GTK_LABEL(lbl_puntos), "Puntos");
+		//Mensajes fin de juego
+		printf("\n\n 		TERMINO EL JUEGO");
+		if (puntos[0] > puntos[1]){
+			GuardarEstadisticas(-1);
+			FinJuego("\nHa perdido con %d puntos contra %d puntos del contrario.\nDesea volver a jugar?");
+		}else if(puntos[0] == puntos[1]){
+			GuardarEstadisticas(0);
+			FinJuego("\nEmpate. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
+		}else{
+			GuardarEstadisticas(1);
+			FinJuego("\nGanaste. Tus puntos: %d || PC: %d \nDesea volver a jugar?");
+		}
+	}
 }
+
 
 void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	/* Encargado de lo que pasa en la ventana del juego en si.
@@ -378,15 +431,6 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 			p = 1;
 			jugadaExitosa = mov_usuario(tablero, x-1, y, p);
 		}
-
-		if(jugadaExitosa != -1){
-			if(color == 0){
-				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/linea.png");
-			}else{
-				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineaG.png");
-			}
-		}
-
 	}
 	else if(LINEA_VERTICAL)
 	{
@@ -399,13 +443,6 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		}else{
 			p = 2;
 			jugadaExitosa = mov_usuario(tablero, x, y-1, p);
-		}
-		if(jugadaExitosa != -1){
-			if(color == 0){
-				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineav.png");
-			}else{
-				gtk_image_set_from_file(GTK_IMAGE(gtk_grid_get_child_at(GTK_GRID(grid_tablero),j,i)), "IMG/lineavG.png");
-			}
 		}
 	}
 
@@ -425,9 +462,6 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		gtk_widget_destroy(dialog);
 	} else {
 		cajasAbiertas -= jugadaExitosa;
-//		if (*modoJuego == 1) {
-//			EnviarJugada (x, y, p);
-//		}
 	}
 
 	sprintf(puntos_txt, "Tus puntos: %d  || PC: %d", puntos[1], puntos[0]);
@@ -512,12 +546,17 @@ GtkWidget *CrearTablero(struct caja **tablero){
 	cajasAbiertas = N*N;  //cant de cajas abiertas, si llega a 0 termina la partida
 
 	if(turno == 0){  //aca turno==0 dice si se eligio que el rival inicie la partida
-		JuegaPC(tablero);  //Human vs PC, empieza PC
-		//if (*modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
+		if (modoJuego == 0) JuegaPC(tablero);  //Human vs PC, empieza PC
+		if (modoJuego == 1) JuegaOponente(tablero); //PC vs PC, empieza rival
 	}
 
-
-	g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()
+	if (modoJuego == 0) {
+		g_signal_connect(eventbox, "button-press-event", G_CALLBACK(Play), tablero);  //llamada a Play()
+		return eventbox;
+	} else {
+		g_signal_connect(eventbox, "button-press-event", G_CALLBACK(PCvsPC), tablero);
+		return eventbox;
+	}
 
 
 	return eventbox;

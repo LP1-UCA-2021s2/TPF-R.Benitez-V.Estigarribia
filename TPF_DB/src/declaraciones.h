@@ -2,9 +2,6 @@
 #ifndef DECLARACIONES_H_
 #define DECLARACIONES_H_
 
-#define PCvsPC (1)
-#define USRvsPC (0)
-
 int N;  //Dimension de la matriz de cajas (no del tablero, que seria de dim <N+1>))
 
 /*cadenas: el index del array corresponde al identificador de la cadena, y el valor contenido es la long de la cadena, cadena[0] siempre se ignora
