@@ -369,7 +369,7 @@
         <property name="can_focus">False</property>
         <child>
           <object class="GtkImage" id="fondo-naranja">
-            <property name="width_request">0</property>
+            <property name="width_request">967</property>
             <property name="height_request">642</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -525,7 +525,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Tus puntos:  0 || PC: 0</property>
                         <attributes>
-                          <attribute name="font-desc" value="Serif Bold 21"/>
+                          <attribute name="font-desc" value="Serif Bold 22"/>
                         </attributes>
                       </object>
                       <packing>

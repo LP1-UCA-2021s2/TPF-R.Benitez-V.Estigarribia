@@ -1,0 +1,3 @@
+	Nombre	G	P	E	No.
+              Rosana          0       1       0       1
+              rosana          0       1       0       1

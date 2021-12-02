@@ -385,8 +385,8 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 
 	char puntos_txt[40];
 
-	i = (GUINT_FROM_LE(event->y) / 50); //las imagenes tienen son 50x50pixeles
-	j = (GUINT_FROM_LE(event->x) / 50);
+	i = (GUINT_FROM_LE(event->y) / 25); //las imagenes tienen son 50x50pixeles
+	j = (GUINT_FROM_LE(event->x) / 25);
 
 
 	struct caja **tablero = data;

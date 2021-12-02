@@ -1,8 +1,11 @@
 /*
- * main.c
- *
- *  Created on: 19 oct. 2021
- *      Author: lp1-2021
+ ===========================================================================
+ Name        : TPF_D&B.c
+ Author      : R.Benitez || V.Estigarribia
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Definicion de funciones declaradas en "declaraciones.h"
+ ============================================================================
  */
 #include <stdio.h>
 #include "declaracionesGTK.h"

@@ -1,4 +1,12 @@
-
+/*
+ ===========================================================================
+ Name        : TPF_D&B.c
+ Author      : R.Benitez || V.Estigarribia
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Definicion de funciones declaradas en "declaraciones.h"
+ ============================================================================
+ */
 #ifndef DECLARACIONES_H_
 #define DECLARACIONES_H_
 
