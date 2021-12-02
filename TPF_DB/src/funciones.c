@@ -45,7 +45,7 @@ char *leer_linea(FILE *fp){
 // result: 0=empate, 1=gano, -1=perdio
 void GuardarEstadisticas (int result) {
 	char aux[100], *nameField, **lineas = NULL;
-	int wins, losses, draws, games, existeJugador=FALSE, cont = 1, filaJugador=-1;
+	int wins, losses, games, existeJugador=FALSE, cont = 1, filaJugador=-1;
 
     FILE *stats = fopen("estadisticas.txt","r");
 
@@ -68,7 +68,6 @@ void GuardarEstadisticas (int result) {
 	        	//se guardan las estadisticas en las variables correspondientes
 	        	wins = atoi(strtok (NULL, " "));
 	        	losses = atoi(strtok (NULL, " "));
-	        	draws = atoi(strtok (NULL, " "));
 	        	games = atoi(strtok (NULL, " "));
 	        }
 	        cont++;
@@ -86,7 +85,7 @@ void GuardarEstadisticas (int result) {
 	stats = fopen ("estadisticas.txt", "w");  //abre para escritura
 	//escribe las lineas que no sean del jugador
 	if (cont == 0) {
-		fprintf (stats, "\n\tNombre\tG\tP\tE\tNo.");  //agrega la cabecera
+		fprintf (stats, "\n\tNombre\tG\tP\tNo.");  //agrega la cabecera
 	}
 	for (int i=0; i < cont; i++) {
 		if (i != filaJugador && *lineas[i] != '\n')
@@ -96,13 +95,12 @@ void GuardarEstadisticas (int result) {
 	if (lineas!=NULL) free (lineas);
 
 	if (!existeJugador) {
-		wins = losses = draws = games = 0;
+		wins = losses = games = 0;
 	}
 	if (result == 1) wins++;
 	else if (result == -1) losses++;
-	else if (result == 0) draws++;
 	games++;
-	fprintf (stats, "\n%20s %10d %7d %7d %7d", nombre1, wins, losses, draws, games);  //escribe los datos del jugador
+	fprintf (stats, "\n%20s %10d %7d %7d", nombre1, wins, losses, games);  //escribe los datos del jugador
 
 	fclose (stats);
 }
