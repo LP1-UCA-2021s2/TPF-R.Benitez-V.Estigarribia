@@ -523,7 +523,6 @@ int mov_pc(struct caja **tablero, int fila, int columna, int bueno){
 		EnviarJugada (fila, columna, pared);
 	}
 
-
 	return cajasCerradas;
 }
 
@@ -580,10 +579,10 @@ int JuegaPC(struct caja **tablero){
 void EnviarJugada (int i, int j, int p) {
 	//envia la jugada realizada (para pc vs pc)
 	int x1, y1, x2, y2;
-	char nombreArchLocal[30];
+	char nombreArchLocal[200];
 	FILE *archLocal;
 
-	sprintf (nombreArchLocal, "%s.txt", nombre1);
+	sprintf (nombreArchLocal, "%s%s.txt", dir_compartido, nombre1);
 
 	if (p == 0) {
 		x1 = x2 = i +1;
@@ -623,8 +622,8 @@ int JuegaOponente(struct caja **tablero){
 
 	int x1, y1, x2, y2, i, j, p, cajasCerradas;
 
-	char nombreArchOponente[30];
-	sprintf (nombreArchOponente, "%s.txt", nombre2);
+	char nombreArchOponente[200];
+	sprintf (nombreArchOponente, "%s%s.txt", dir_compartido, nombre2);
 
 	FILE *archOponente;
 	archOponente = fopen (nombreArchOponente, "r");

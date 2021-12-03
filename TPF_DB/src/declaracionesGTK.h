@@ -13,7 +13,7 @@
 
 #include <gtk/gtk.h>
 
-const gchar *nombre1, *nombre2, *dim_matriz;
+const gchar *nombre1, *nombre2, *dim_matriz, *dir_compartido;
 GtkBuilder *builder;
 
 GtkWidget *box_tablero;
@@ -56,6 +56,7 @@ GtkWidget *name_entry2;
 GtkWidget *quien_inicia;
 GtkWidget *colour;
 GtkWidget *matrix_dim;
+GtkWidget *entry_compartida;
 
 /*LABELS*/
 GtkWidget *lbl_puntos1;

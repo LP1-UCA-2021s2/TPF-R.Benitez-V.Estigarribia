@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 	builder=gtk_builder_new();
 
 	//Se carga el builder
-	if(gtk_builder_add_from_file(builder,"D&B grafics.glade",&error)==0){
+	if(gtk_builder_add_from_file(builder,"D&B grafics.glade",&error)==0) {
 		g_print("Error en la funcion gtk_builder_add_from_file: \n");
 		return 1;
 	}
@@ -38,7 +38,6 @@ int main(int argc, char *argv[]){
 	win_juego = GTK_WIDGET(gtk_builder_get_object(builder,"win_game"));
 	g_signal_connect(win_juego,"destroy",gtk_main_quit,NULL);
 
-	lbl_estado = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_mensajitos"));
 
 	/*BOTONES*/
 	btn_newgame = GTK_WIDGET(gtk_builder_get_object(builder,"btn_star"));
@@ -76,25 +75,20 @@ int main(int argc, char *argv[]){
 
 	dialogAcerca = gtk_builder_get_object(builder, "win_acercad");
 
-	menu_mostrar_acerca = gtk_builder_get_object(builder, "imagemenuitem11");
+
+	menu_mostrar_acerca = gtk_builder_get_object(builder, "about");
 	g_signal_connect(menu_mostrar_acerca, "activate", G_CALLBACK (mostrar_acerca), NULL);
 
-	menu_mostrar_acerca2 = gtk_builder_get_object(builder, "imagemenuitem16");
-	g_signal_connect(menu_mostrar_acerca2, "activate", G_CALLBACK (mostrar_acerca), NULL);
 
-
-	menu_mostrar_ayuda = gtk_builder_get_object(builder, "ver_itm");
+	menu_mostrar_ayuda = gtk_builder_get_object(builder, "jelp");
 	g_signal_connect(menu_mostrar_ayuda, "activate", G_CALLBACK (mostrar_ayuda), NULL);
 
-	menu_mostrar_ayuda2 = gtk_builder_get_object(builder, "ver_itm1");
-	g_signal_connect(menu_mostrar_ayuda2, "activate", G_CALLBACK (mostrar_ayuda), NULL);
 
-
-
+	/*ENTRIES*/
 	name_entry1 = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador1"));
 	name_entry2 = GTK_WIDGET(gtk_builder_get_object(builder,"txt_jugador2"));
-
 	matrix_dim = GTK_WIDGET(gtk_builder_get_object(builder,"txt_m"));
+	entry_compartida = GTK_WIDGET(gtk_builder_get_object(builder,"entry_compartida"));
 
 	/*COMBO_BOX*/
 	quien_inicia = GTK_WIDGET(gtk_builder_get_object(builder,"cb_jug_inicial"));
@@ -108,6 +102,8 @@ int main(int argc, char *argv[]){
 	lbl_name1 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_name1"));
 	lbl_puntos2 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_pts2"));
 	lbl_name2 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_name2"));
+
+	lbl_estado = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_infos"));
 
 
 	gtk_widget_show_all(win_entrada);

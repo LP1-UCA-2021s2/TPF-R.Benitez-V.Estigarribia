@@ -413,8 +413,8 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 	int repiteOponente = 0;
 
 
-	i = (GUINT_FROM_LE(event->y) / 25); //las imagenes tienen son 50x50pixeles
-	j = (GUINT_FROM_LE(event->x) / 25);
+	i = (GUINT_FROM_LE(event->y) / 20); //las imagenes tienen son 50x50pixeles
+	j = (GUINT_FROM_LE(event->x) / 20);
 
 
 	struct caja **tablero = data;
@@ -492,10 +492,11 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 		cajasAbiertas -= jugadaExitosa;
 	}
 
+
 	MostrarEstado ();
 	if(jugadaExitosa == 0)  //solo si no hemos cerrado una caja le damos al rival la oportunidad de jugar en el siguiente turno
 	{
-
+		gtk_label_set_label(GTK_LABEL(lbl_estado), "La PC esta jugando...");
 		repiteOponente = JuegaPC(tablero);
 		cajasAbiertas -= repiteOponente;
 		MostrarEstado ();
@@ -505,6 +506,7 @@ void Play(GtkWidget *event_box, GdkEventButton *event, gpointer data){
 			MostrarEstado ();
 		}
 	}
+	gtk_label_set_label(GTK_LABEL(lbl_estado), "Es su turno");
 
 	PrintBox(tablero);
 	puts("\n\n=================================================================\n\n");
@@ -590,13 +592,15 @@ GtkWidget *CrearTablero(struct caja **tablero){
 //Muestra la pantalla de juego
 void IniciarPartida(GtkWidget *widget, gpointer data){
 
+	int Error=FALSE;
 	dim_matriz = gtk_entry_get_text (GTK_ENTRY(matrix_dim));
 
 	if (dim_matriz[0] == '\0') {
 		N = 2;
 	} else {
 		N = atoi (dim_matriz);
-		if (N < 2 || N > 15) {
+		if (N < 3 || N > 15) {
+			Error = TRUE;
 			GtkWidget *dialog;
 			dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
 							GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -606,22 +610,40 @@ void IniciarPartida(GtkWidget *widget, gpointer data){
 			gtk_window_set_title(GTK_WINDOW(dialog), "DATOS INCORRECTOS");
 			gtk_dialog_run(GTK_DIALOG(dialog));
 			gtk_widget_destroy(dialog);
+		} else {
+			N = N-1;
+		}
+	}
+	if (modoJuego == 1) {//pc vs pc
+		dir_compartido = gtk_entry_get_text (GTK_ENTRY(entry_compartida));
+		if (dir_compartido[0] == '\0') {
+			Error = TRUE;
+			GtkWidget *dialog;
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win_warning),
+							GTK_DIALOG_DESTROY_WITH_PARENT,
+							GTK_MESSAGE_WARNING,
+							GTK_BUTTONS_OK,
+							"Debe ingresar la ubicacion del directorio compartido");
+			gtk_window_set_title(GTK_WINDOW(dialog), "DATOS INCORRECTOS");
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(dialog);
 		}
 	}
 
 
-	gtk_label_set_label(GTK_LABEL(lbl_name1), nombre1);
-	gtk_label_set_label(GTK_LABEL(lbl_name2), nombre2);
+	if (!Error) {
+		gtk_label_set_label(GTK_LABEL(lbl_name1), nombre1);
+		gtk_label_set_label(GTK_LABEL(lbl_name2), nombre2);
 
-	//Creacion de TABLERO LOGICO
-	struct caja **tablero = TableroNuevo(N);
-	InitBoxes(tablero);
-	PrintBox(tablero);
-	puts("\n\n=================================================================\n\n");
+		//Creacion de TABLERO LOGICO
+		struct caja **tablero = TableroNuevo(N);
+		InitBoxes(tablero);
+		PrintBox(tablero);
+		puts("\n\n=================================================================\n\n");
 
-	box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero"));
-	gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(tablero), TRUE, FALSE, 20);  //crea el box del tablero
-	gtk_widget_show_all(win_juego);
-	gtk_widget_hide(win_principal);
-
+		box_tablero = GTK_WIDGET(gtk_builder_get_object(builder, "box_tablero"));
+		gtk_box_pack_start(GTK_BOX(box_tablero), CrearTablero(tablero), TRUE, FALSE, 20);  //crea el box del tablero
+		gtk_widget_show_all(win_juego);
+		gtk_widget_hide(win_principal);
+	}
 }

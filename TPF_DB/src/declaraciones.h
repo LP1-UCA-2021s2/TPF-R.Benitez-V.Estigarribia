@@ -74,6 +74,7 @@ int JuegaPC(struct caja **tablero);
 int JuegaOponente(struct caja **tablero);
 void EnviarJugada (int i, int j, int p);
 void GuardarEstadisticas (int result);
+void Delay ();
 struct caja **TableroNuevo(int size);
 
 
