@@ -45,6 +45,7 @@ void mostrar_ayuda(GtkWidget *widget, gpointer data) {
 }
 
 void JuegoNuevo(GtkWidget *widget, gpointer data){
+	gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
 	gtk_widget_show_all(win_modo_juego);
 	gtk_widget_hide(win_entrada);
 }
@@ -238,6 +239,7 @@ void VolverAModoJuego (GtkWidget *widget, gpointer data) {
 void QuienInicia(GtkWidget *widget, gpointer data){
 	//Por default inicia el usuario (o PC local en modo PC vs PC)
 	turno = gtk_combo_box_get_active(GTK_COMBO_BOX(quien_inicia));
+
 	if(turno == -1){  //lectura invalida
 		turno = 1;
 	}
