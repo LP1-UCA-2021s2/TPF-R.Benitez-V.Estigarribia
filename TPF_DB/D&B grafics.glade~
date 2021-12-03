@@ -781,7 +781,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="fondo">
             <property name="width_request">100</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
@@ -803,7 +803,7 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkImage">
+                  <object class="GtkImage" id="titulo">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="pixbuf">imagenes/generatedtext.jpg</property>
@@ -830,7 +830,6 @@
                   <object class="GtkLabel" id="lbl_inicio">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_top">5</property>
                     <property name="label" translatable="yes">Quien inicia?:</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif Bold 22"/>
@@ -873,7 +872,7 @@
                   <object class="GtkLabel" id="lbl_color">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_top">12</property>
+                    <property name="margin_top">2</property>
                     <property name="label" translatable="yes">Elija el color con el que jugará:</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif Bold 22"/>
@@ -916,7 +915,7 @@
                   <object class="GtkLabel" id="lbl_dim_m">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_top">12</property>
+                    <property name="margin_top">2</property>
                     <property name="label" translatable="yes">Dimension del tablero:</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif Bold 22"/>
@@ -943,9 +942,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="lbl_">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">2</property>
                     <property name="label" translatable="yes">Directorio de carpeta compartida:</property>
                     <attributes>
                       <attribute name="font-desc" value="Serif Bold 22"/>
@@ -958,15 +958,33 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="entry_compartida">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="placeholder_text" translatable="yes">(ignore esto si eligio el modo Humano vs PC)</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_bottom">5</property>
+                    <property name="label" translatable="yes">(Solo para modo PC vs PC).</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Serif Bold 12"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">9</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_compartida">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin_left">183</property>
+                    <property name="margin_right">183</property>
+                    <property name="placeholder_text" translatable="yes">          El path ingresado debe terminar con '/'</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">10</property>
                   </packing>
                 </child>
               </object>
