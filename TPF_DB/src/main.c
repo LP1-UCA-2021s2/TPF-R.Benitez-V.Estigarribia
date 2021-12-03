@@ -35,13 +35,20 @@ int main(int argc, char *argv[]){
 	win_principal = GTK_WIDGET(gtk_builder_get_object(builder,"win_principal"));
 	g_signal_connect(win_principal,"destroy",gtk_main_quit,NULL);
 
-	win_juego = GTK_WIDGET(gtk_builder_get_object(builder,"win_juego"));
+	win_juego = GTK_WIDGET(gtk_builder_get_object(builder,"win_game"));
 	g_signal_connect(win_juego,"destroy",gtk_main_quit,NULL);
 
+	lbl_estado = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_mensajitos"));
 
 	/*BOTONES*/
 	btn_newgame = GTK_WIDGET(gtk_builder_get_object(builder,"btn_star"));
 	g_signal_connect(btn_newgame,"button-press-event", G_CALLBACK(JuegoNuevo),NULL);
+
+	menu_juego_nuevo = GTK_WIDGET(gtk_builder_get_object(builder,"imagemenuitem6"));
+	g_signal_connect(menu_juego_nuevo,"activate", G_CALLBACK(NuevaPartida),NULL);
+
+	menu_salir = GTK_WIDGET(gtk_builder_get_object(builder,"imagemenuitem10"));
+	g_signal_connect(menu_salir,"activate", G_CALLBACK(Salir),NULL);
 
 	btn_stats = GTK_WIDGET(gtk_builder_get_object(builder,"btn_est"));
 	g_signal_connect(btn_stats,"button-press-event", G_CALLBACK(ShowStats),NULL);
@@ -97,8 +104,10 @@ int main(int argc, char *argv[]){
 	g_signal_connect(colour,"changed", G_CALLBACK(Color),NULL);
 
 	/*LABELS*/
-	lbl_puntos = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_estado"));
-	lbl_name = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_na"));
+	lbl_puntos1 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_pts1"));
+	lbl_name1 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_name1"));
+	lbl_puntos2 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_pts2"));
+	lbl_name2 = GTK_WIDGET(gtk_builder_get_object(builder,"lbl_name2"));
 
 
 	gtk_widget_show_all(win_entrada);

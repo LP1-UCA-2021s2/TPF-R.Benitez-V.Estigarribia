@@ -29,6 +29,8 @@ GtkWidget *win_salir;
 GtkWidget *win_yes_no;
 GtkWidget *win_fin;
 
+GtkWidget *lbl_estado;
+
 /*BOTONES*/
 GtkWidget *btn_newgame;
 GtkWidget *btn_stats;
@@ -40,6 +42,8 @@ GtkWidget *btn_PCvsPC;
 GtkWidget *btn_iniciar;
 GtkWidget *btn_atras1;
 GtkWidget *btn_atras2;
+GtkWidget *menu_juego_nuevo;
+GtkWidget *menu_salir;
 GObject *dialogAcerca;
 GObject *menu_mostrar_acerca;
 GObject *menu_mostrar_acerca2;
@@ -54,11 +58,15 @@ GtkWidget *colour;
 GtkWidget *matrix_dim;
 
 /*LABELS*/
-GtkWidget *lbl_puntos;
-GtkWidget *lbl_name;
+GtkWidget *lbl_puntos1;
+GtkWidget *lbl_name1;
+GtkWidget *lbl_puntos2;
+GtkWidget *lbl_name2;
+
 
 /*FUNCIONES*/
 void JuegoNuevo(GtkWidget *widget, gpointer data);
+void NuevaPartida(GtkWidget *widget, gpointer data);
 void ModoUSRvsPC(GtkWidget *widget, gpointer data);
 void ModoPCvsPC(GtkWidget *widget, gpointer data);
 void ShowStats (GtkWidget *widget, gpointer data);
