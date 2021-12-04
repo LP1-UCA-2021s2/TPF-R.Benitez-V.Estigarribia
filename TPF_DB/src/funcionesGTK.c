@@ -353,7 +353,7 @@ void AgregarLinea(int x, int y, int p){
 	}
 }
 
-
+//En el modo PC vs PC, se llama a esta funcion con cada click en el tablero, es decir sin los clicks no avanza la partida
 void PCvsPC (GtkWidget *object, GdkEventButton *event, gpointer data) {
 	struct caja **tablero = data;
 	int repiteTurno;
